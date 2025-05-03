@@ -33,6 +33,8 @@ async function simpleGeminiCreateMessage(rawContents, { model = "gemini-2.5-flas
 
 }
 
+if (!localStorage.getItem("gemini-key")) localStorage.setItem("gemini-key", prompt("Gemini APIキーを入力してください。"));
+
 
 /**
  * オブジェクトのキーが配列の文字列と一致しているかどうかを確認します。keysに文字列が渡された場合はカンマ区切りで自動的に配列に変換されます。
