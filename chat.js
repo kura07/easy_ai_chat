@@ -56,17 +56,29 @@ const saveChatMessages = () => {
 //------------------------------
 // イベントリスナ定義
 //------------------------------
+// input
+(() => {
+  const resize = /** @param {HTMLTextAreaElement} elm */ elm => { elm.style.height = "auto"; elm.style.height = `${elm.scrollHeight}px`; };
+  document.addEventListener("input", evt => {
+    const /** @type {HTMLElement} */ target = evt.target;
+    if (target === inputUser) {
+      buttonSend.disabled = inputUser.value === "";
+      resize(inputUser);
+    }
+    else if (target === inputModel) resize(inputModel);
+    else if (target.tagName === "ARTICLE" && sectionChat.contains(target)) target.dataset.changed = "true";
+  });
+})();
+// focusout
+document.addEventListener("focusout", evt => {
+  const /** @type {HTMLElement} */ target = evt.target;
+  if (target.tagName === "ARTICLE" && sectionChat.contains(target) && target.dataset.changed === "true") {
+    delete target.dataset.changed;
+    if (target.dataset.role === "model") target.dataset.markdown = MarkDown.turndown(target.innerHTML);
+  }
+});
 // チャット
 document.getElementById("send").addEventListener("click", sendGemini);
-(() => {
-  const resize = /** @this {HTMLTextAreaElement} */ function () {
-    this.style.height = "auto";
-    this.style.height = `${this.scrollHeight}px`;
-  };
-  inputUser.addEventListener("input", resize);
-  inputModel.addEventListener("input", resize);
-})();
-inputUser.addEventListener("input", () => { buttonSend.disabled = inputUser.value === ""; });
 [inputUser, inputModel].forEach(elm => {
   elm.addEventListener("keydown", evt => {
     if (evt.key === "Enter" && evt.ctrlKey) {

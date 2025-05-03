@@ -74,8 +74,9 @@ textarea {
 }
 
 #menu details {
-  background-color: #eee;
+  border: 1px solid #ccc;
   border-radius: .5em;
+  background-color: #fff;
   cursor: pointer;
 }
 
