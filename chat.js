@@ -32,6 +32,7 @@ const sendGemini = async () => {
   ];
   const newModelText = await Gemini.createMessage(rawContents);
   appendModelMessage(nextModelText + newModelText);
+  saveChatMessages();
 };
 const appendUserMessage = text => {
   const /** @type {HTMLElement} */ clone = templateUser.content.cloneNode(true), article = clone.querySelector("article");
@@ -75,8 +76,12 @@ document.addEventListener("focusout", evt => {
   if (target.tagName === "ARTICLE" && sectionChat.contains(target) && target.dataset.changed === "true") {
     delete target.dataset.changed;
     if (target.dataset.role === "model") target.dataset.markdown = MarkDown.turndown(target.innerHTML);
+    saveChatMessages();
   }
 });
+
+
+
 // チャット
 document.getElementById("send").addEventListener("click", sendGemini);
 [inputUser, inputModel].forEach(elm => {
