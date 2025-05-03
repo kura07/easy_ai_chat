@@ -1,18 +1,20 @@
 /// <reference path="./jsdoc.js" />
 "use strict";
 
-const sectionChat = document.getElementById("chat");
-const /** @type {HTMLTextAreaElement} */ inputUser = document.getElementById("input-user"), /** @type {HTMLTextAreaElement} */ inputModel = document.getElementById("input-model");
-const /** @type {HTMLButtonElement} */ buttonSend = document.getElementById("send");
-
-
-// 画像ペーストに対応する
-const onPasteImage = function (evt) {
-  const images = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"));
-  if (images.length === 0) return;
-};
-inputUser.addEventListener("paste", onPasteImage);
-
+// 要素を取得しておく
+const byId = id => document.getElementById(id);
+const
+  sectionChat = byId("chat"),
+  templateUser = /** @type {HTMLTemplateElement} */(byId("template-user")),
+  templateModel = /** @type {HTMLTemplateElement} */(byId("template-model"));
+const
+  inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
+  inputModel =  /** @type {HTMLTextAreaElement} */(byId("input-model")),
+  buttonSend = /** @type {HTMLButtonElement} */(byId("send"));
+const
+  menuClearAllLocalStorage = byId("clear_all_local_storage"),
+  menuSetGeminiApiKey = byId("set_gemini_api_key"),
+  menuSetCloudinaryApiKey = byId("set_cloudinary_api_key");
 
 // テキストエリアのイベント
 (() => {
@@ -59,3 +61,12 @@ const appendModelMessage = markdownText => {
   clone.querySelector("article").innerHTML = marked.parse(markdownText);
   sectionChat.append(clone);
 };
+
+
+
+// 画像ペーストに対応する
+const onPasteImage = function (evt) {
+  const images = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"));
+  if (images.length === 0) return;
+};
+inputUser.addEventListener("paste", onPasteImage);

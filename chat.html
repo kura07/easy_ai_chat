@@ -2,91 +2,46 @@
 <html>
 
 <head>
-  <base target="_top">
+  <title>簡易AIチャット</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <style>
-    body,
-    textarea {
-      font-family: "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Yu Gothic", "Meiryo", sans-serif;
-    }
-
-    #chat {
-      margin-bottom: 50%;
-    }
-
-    .user {
-      margin-left: auto;
-      width: 80%;
-      padding: .5em;
-      border-radius: .5em;
-      background-color: #eee;
-      white-space: pre-line;
-    }
-
-    .model {
-      padding: .5em;
-    }
-
-    #input {
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      box-sizing: border-box;
-      width: 100%;
-      padding: 8px;
-    }
-
-    #input textarea {
-      box-sizing: border-box;
-      margin: 0;
-      outline: none;
-      border: none;
-      padding: .5em;
-      width: 100%;
-      max-height: 7em;
-      font-size: 1em;
-      resize: none;
-    }
-
-    #send {
-      position: absolute;
-      bottom: .5em;
-      right: .5em;
-      border: none;
-      background-color: #000;
-      color: #fff;
-      width: 2em;
-      height: 2em;
-      padding: 0;
-      border-radius: 1em;
-      font-weight: bold;
-      font-size: 1.5em;
-    }
-
-    #send:active {
-      background-color: #888;
-    }
-
-    #send:disabled {
-      background-color: #aaa;
-    }
-  </style>
+  <link rel="stylesheet" href="chat.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.min.js"></script>
 </head>
 
 <body>
+
   <section id="chat">
-    <template id="template-user"><article class="user" contenteditable="true"></article></template>
-    <template id="template-model"><article class="model" contenteditable="true"></article></template>
+    <template id="template-user">
+      <article class="user" contenteditable="true"></article>
+    </template>
+    <template id="template-model">
+      <article class="model" contenteditable="true"></article>
+    </template>
   </section>
+
   <section id="input">
     <article><textarea id="input-user" placeholder="ユーザーの入力"></textarea></article>
     <article><textarea id="input-model" placeholder="モデルの出力の固定"></textarea></article>
     <button id="send" disabled>↑</button>
   </section>
-  <script src="chat.js"></script>
+
+  <aside id="menu">
+    <details open>
+      <summary>☰</summary>
+      <nav>
+        <ul>
+          <li id="clear_all_local_storage">clear all localStorage
+          <li id="set_gemini_api_key">set Gemini API key
+          <li id="set_cloudinary_api_key">set Cloudinary API key
+        </ul>
+      </nav>
+    </details>
+
+  </aside>
+
   <script src="library.js"></script>
+  <script src="chat.js"></script>
 
 </body>
 

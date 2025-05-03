@@ -1,0 +1,93 @@
+body,
+textarea {
+  font-family: "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+#chat {
+  margin-bottom: 50%;
+}
+
+.user {
+  margin-left: auto;
+  width: 80%;
+  padding: .5em;
+  border-radius: .5em;
+  background-color: #eee;
+  white-space: pre-line;
+}
+
+.model {
+  padding: .5em;
+}
+
+#input {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px;
+}
+
+#input textarea {
+  box-sizing: border-box;
+  margin: 0;
+  outline: none;
+  border: none;
+  padding: .5em;
+  width: 100%;
+  max-height: 7em;
+  font-size: 1em;
+  resize: none;
+}
+
+#send {
+  position: absolute;
+  bottom: .5em;
+  right: .5em;
+  border: none;
+  background-color: #000;
+  color: #fff;
+  width: 2em;
+  height: 2em;
+  padding: 0;
+  border-radius: 1em;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+#send:active {
+  background-color: #888;
+}
+
+#send:disabled {
+  background-color: #aaa;
+}
+
+#menu {
+  position: fixed;
+  top: .5em;
+  left: .5em;
+  background-color: #eee;
+  border-radius: .5em;
+  cursor: pointer;
+  user-select: none;
+}
+
+#menu summary {
+  padding: .5em;
+  list-style: none;
+}
+
+#menu ul {
+  margin: 0;
+  padding: .5em;
+}
+
+#menu li {
+  list-style-type: none;
+  padding: .5em;
+}
+#menu li:active {
+  background-color: #ddd;
+}

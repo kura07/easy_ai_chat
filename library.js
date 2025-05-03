@@ -1,6 +1,8 @@
 /// <reference path="./jsdoc.js" />
 "use strict";
 
+const GEMINI_API_KEY = "gemini_api_key";
+
 /**
  * Gemini APIに非同期でfetchします。簡易バージョン。
  * @param {K_GeminiContent[]} rawContents
@@ -23,7 +25,7 @@ async function simpleGeminiCreateMessage(rawContents, { model = "gemini-2.5-flas
     generationConfig: { temperature },
   });
 
-  const httpRes = await fetch(`https:/\/generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${localStorage.getItem("gemini-key")}`, {
+  const httpRes = await fetch(`https:/\/generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${SimpleCrypto.load(GEMINI_API_KEY)}`, {
     method: "post", body,
   });
 
@@ -33,7 +35,21 @@ async function simpleGeminiCreateMessage(rawContents, { model = "gemini-2.5-flas
 
 }
 
-if (!localStorage.getItem("gemini-key")) localStorage.setItem("gemini-key", prompt("Gemini APIキーを入力してください。"));
+const SimpleCrypto = {
+  _secretKey: "デフォルト",
+
+  /** @type {(key:string)=>void} */
+  setSecretKey(key) { this._secretKey = key; },
+
+  /** @type {(text:string, key:string)=>string} */
+  encrypt(text, key = this._secretKey) { return btoa(encodeURIComponent(this._xor(text, key))); },
+
+  /** @type {(encoded:string, key:string)=>string} */
+  decrypt(encoded, key = this._secretKey) { return this._xor(decodeURIComponent(atob(encoded)), key); },
+
+  /** @type {(text:string, key:string)=>string} */
+  _xor(text, key) { return text.split("").map((c, i) => String.fromCharCode(c.charCodeAt() ^ key.charCodeAt(i % key.length))).join(""); },
+};
 
 
 /**
