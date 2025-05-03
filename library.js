@@ -1,7 +1,15 @@
 /// <reference path="./jsdoc.js" />
 "use strict";
 
-const GEMINI_API_KEY = "gemini_api_key";
+
+const gemini = {
+  _apiKey: "",
+  /** @type {(key:string)=>void} */
+  setApiKey(key) {
+    this._apiKey = simpleCrypto.encrypt(key);
+    localStorage.setItem("gemini-api-key", this._apiKey);
+  },
+};
 
 /**
  * Gemini APIに非同期でfetchします。簡易バージョン。
@@ -35,7 +43,7 @@ async function simpleGeminiCreateMessage(rawContents, { model = "gemini-2.5-flas
 
 }
 
-const SimpleCrypto = {
+const simpleCrypto = {
   _secretKey: "デフォルト",
 
   /** @type {(key:string)=>void} */

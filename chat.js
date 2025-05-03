@@ -14,7 +14,19 @@ const
 const
   menuClearAllLocalStorage = byId("clear_all_local_storage"),
   menuSetGeminiApiKey = byId("set_gemini_api_key"),
-  menuSetCloudinaryApiKey = byId("set_cloudinary_api_key");
+  menuSetCloudinaryApiKey = byId("set_cloudinary_api_key"),
+  menuCheckLocalStorage = byId("check_local_stotage");
+
+
+// メニューの処理
+menuClearAllLocalStorage.addEventListener("click", () => { if (confirm("Are you sure?")) localStorage.clear(); });
+menuSetGeminiApiKey.addEventListener("click", () => {
+  const key = prompt("Input Gemini API key.");
+  if (key) gemini.setApiKey(key);
+});
+menuCheckLocalStorage.addEventListener("click", () => {
+  alert(Object.entries(localStorage).map(([key, value], idx) => `[${idx}] ${JSON.stringify(key)}: ${JSON.stringify(value)}`).join("\n"));
+});
 
 // テキストエリアのイベント
 (() => {
