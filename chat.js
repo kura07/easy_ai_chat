@@ -1,6 +1,8 @@
 /// <reference path="./jsdoc.js" />
 "use strict";
 
+const STORAGE_MESSAGES = "messages";
+
 //------------------------------
 // 要素取得
 //------------------------------
@@ -17,41 +19,60 @@ const
   menuClearAllLocalStorage = byId("clear_all_local_storage"),
   menuSetGeminiApiKey = byId("set_gemini_api_key"),
   menuSetCloudinaryApiKey = byId("set_cloudinary_api_key"),
-  menuCheckLocalStorage = byId("check_local_stotage");
+  menuCheckLocalStorage = byId("check_local_stotage"),
+  menuDeleteMessages = byId("delete_messages");
 
 //------------------------------
 // チャット処理関数たち
 //------------------------------
-const sendGemini = async () => {
-  const nextUserText = inputUser.value, nextModelText = inputModel.value;
-  inputUser.value = inputModel.value = "";
-  appendUserMessage(nextUserText);
-  const /** @type {K_GeminiContent[]} */ rawContents = [
-    { user: nextUserText },
-    ...nextModelText ? [{ model: nextModelText }] : [],
-  ];
-  const newModelText = await Gemini.createMessage(rawContents);
-  appendModelMessage(nextModelText + newModelText);
-  saveChatMessages();
-};
-const appendUserMessage = text => {
-  const /** @type {HTMLElement} */ clone = templateUser.content.cloneNode(true), article = clone.querySelector("article");
-  article.innerText = text;
-  sectionChat.append(clone);
-};
-const appendModelMessage = markdownText => {
-  const /** @type {HTMLElement} */ clone = templateModel.content.cloneNode(true), article = clone.querySelector("article");
-  article.innerHTML = MarkDown.parse(markdownText);
-  article.dataset.markdown = markdownText;
-  sectionChat.append(clone);
-};
-const saveChatMessages = () => {
-  const articles = [...sectionChat.querySelectorAll("article")];
-  const messages = articles.map(/** @return {K_GeneralAiChatMessage} */a => {
-    if (a.dataset.role === "user") return { user: a.innerText };
-    if (a.dataset.role === "model") return { assistant: a.dataset.markdown };
-  });
-  localStorage.setItem("messages", JSON.stringify(messages));
+const chat = {
+  /**
+   * 新しいメッセージを追加して、テキスト生成AIのレスポンスを得ます。
+   */
+  async addNewMessageAndGetResponse() {
+    const nextUserText = inputUser.value, nextModelText = inputModel.value;
+    inputUser.value = inputModel.value = "";
+    chat.appendUserMessage(nextUserText);
+
+  },
+
+  /**
+   * #chat の中身を読み取り、メッセージ配列に変換します。
+   * @return {K_GeneralAiChatMessage[]}
+   */
+  getMessagesFromChatSection() {
+    const articles = [...sectionChat.querySelectorAll("article")];
+    return articles.map(/** @return {K_GeneralAiChatMessage} */a => {
+      if (a.dataset.role === "user") return { user: a.innerText };
+      if (a.dataset.role === "model") return { assistant: a.dataset.markdown };
+    });
+  },
+
+  /**
+   * #chat の末尾にユーザーメッセージを追加します。
+   * @param {string} text
+   */
+  appendUserMessage(text) {
+    const /** @type {HTMLElement} */ clone = templateUser.content.cloneNode(true), article = clone.querySelector("article");
+    article.innerText = text;
+    sectionChat.append(clone);
+  },
+
+  /**
+   * #chat の末尾にアシスタントのメッセージを追加します。
+   * @param {string} markdownText
+   */
+  appendModelMessage(markdownText) {
+    const /** @type {HTMLElement} */ clone = templateModel.content.cloneNode(true), article = clone.querySelector("article");
+    article.innerHTML = markdown.parse(markdownText);
+    article.dataset.markdown = markdownText;
+    sectionChat.append(clone);
+  },
+
+  /**
+   * #chat の内容を localStorage に保存します。
+   */
+  saveChatMessages() { localStorage.setItem(STORAGE_MESSAGES, JSON.stringify(chat.getMessagesFromChatSection())); },
 };
 
 //------------------------------
@@ -75,39 +96,44 @@ document.addEventListener("focusout", evt => {
   const /** @type {HTMLElement} */ target = evt.target;
   if (target.tagName === "ARTICLE" && sectionChat.contains(target) && target.dataset.changed === "true") {
     delete target.dataset.changed;
-    if (target.dataset.role === "model") target.dataset.markdown = MarkDown.turndown(target.innerHTML);
-    saveChatMessages();
+    if (target.dataset.role === "model") target.dataset.markdown = markdown.turndown(target.innerHTML);
+    chat.saveChatMessages();
   }
 });
 
-
-
 // チャット
-document.getElementById("send").addEventListener("click", sendGemini);
+document.getElementById("send").addEventListener("click", chat.addNewMessageAndGetResponse);
 [inputUser, inputModel].forEach(elm => {
   elm.addEventListener("keydown", evt => {
     if (evt.key === "Enter" && evt.ctrlKey) {
       evt.preventDefault();
-      sendGemini();
+      chat.addNewMessageAndGetResponse();
       inputUser.dispatchEvent(new Event("input"));
     }
   });
 });
-// メニュー
-menuClearAllLocalStorage.addEventListener("click", () => { if (confirm("Are you sure?")) localStorage.clear(); });
-menuSetGeminiApiKey.addEventListener("click", () => {
-  const key = prompt("Input Gemini API key.");
-  if (key) gemini.setApiKey(key);
-});
-menuSetCloudinaryApiKey.addEventListener("click", () => {
 
-});
-menuCheckLocalStorage.addEventListener("click", () => {
-  alert(Object.entries(localStorage).map(([key, value], idx) => {
-    const dispValue = JSON.stringify(value).length > 20 ? JSON.stringify(value).slice(0, 20) + "..." : JSON.stringify(value);
-    return `[${idx}] ${JSON.stringify(key)}: ${dispValue}`;
-  }).join("\n"));
-});
+// メニュー
+(() => {
+  const addListener = /** @param {HTMLElement} elm */(elm, handler) => { elm.addEventListener("click", handler); };
+  addListener(menuClearAllLocalStorage, () => { if (confirm("Are you sure?")) localStorage.clear(); });
+  addListener(menuSetGeminiApiKey, () => {
+    const key = prompt("Input Gemini API key.");
+    if (key) gemini.setApiKey(key);
+  })
+  addListener(menuCheckLocalStorage, () => {
+    alert(Object.entries(localStorage).map(([key, value], idx) => {
+      const dispValue = JSON.stringify(value).length > 20 ? JSON.stringify(value).slice(0, 20) + "..." : JSON.stringify(value);
+      return `[${idx}] ${JSON.stringify(key)}: ${dispValue}`;
+    }).join("\n"));
+  });
+  addListener(menuDeleteMessages, () => {
+    if (!confirm("Are you sure?")) return;
+    localStorage.removeItem(STORAGE_MESSAGES);
+    location.reload();
+  });
+})();
+
 // 画像ペーストに対応する
 const onPasteImage = function (evt) {
   const images = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"));
@@ -121,7 +147,7 @@ inputUser.addEventListener("paste", onPasteImage);
 ((/** @type {K_GeneralAiChatMessage[]} */messages) => {
   if (!messages) return;
   messages.forEach(m => {
-    if (m.user) appendUserMessage(m.user);
-    if (m.assistant) appendModelMessage(m.assistant);
+    if (m.user) chat.appendUserMessage(m.user);
+    if (m.assistant) chat.appendModelMessage(m.assistant);
   });
-})(JSON.parse(localStorage.getItem("messages")));
+})(JSON.parse(localStorage.getItem(STORAGE_MESSAGES)));
