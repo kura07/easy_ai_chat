@@ -1,7 +1,9 @@
 /// <reference path="./jsdoc.js" />
 "use strict";
 
-// 要素を取得しておく
+//------------------------------
+// 要素取得
+//------------------------------
 const byId = id => document.getElementById(id);
 const
   sectionChat = byId("chat"),
@@ -17,18 +19,37 @@ const
   menuSetCloudinaryApiKey = byId("set_cloudinary_api_key"),
   menuCheckLocalStorage = byId("check_local_stotage");
 
+  
+//------------------------------
+// 処理関数たち
+//------------------------------
+const sendGemini = async () => {
+  const nextUserText = inputUser.value, nextModelText = inputModel.value;
+  inputUser.value = inputModel.value = "";
+  appendUserMessage(nextUserText);
+  const /** @type {K_GeminiContent[]} */ rawContents = [
+    { user: nextUserText },
+    ...nextModelText ? [{ model: nextModelText }] : [],
+  ];
+  const newModelText = await simpleGeminiCreateMessage(rawContents);
+  appendModelMessage(nextModelText + newModelText);
+};
+const appendUserMessage = text => {
+  const /** @type {HTMLElement} */ clone = /**@type{HTMLTemplateElement}*/(document.getElementById("template-user")).content.cloneNode(true);
+  clone.querySelector("article").innerText = text;
+  sectionChat.append(clone);
+};
+const appendModelMessage = markdownText => {
+  const /** @type {HTMLElement} */ clone = /**@type{HTMLTemplateElement}*/(document.getElementById("template-model")).content.cloneNode(true);
+  clone.querySelector("article").innerHTML = marked.parse(markdownText);
+  sectionChat.append(clone);
+};
 
-// メニューの処理
-menuClearAllLocalStorage.addEventListener("click", () => { if (confirm("Are you sure?")) localStorage.clear(); });
-menuSetGeminiApiKey.addEventListener("click", () => {
-  const key = prompt("Input Gemini API key.");
-  if (key) gemini.setApiKey(key);
-});
-menuCheckLocalStorage.addEventListener("click", () => {
-  alert(Object.entries(localStorage).map(([key, value], idx) => `[${idx}] ${JSON.stringify(key)}: ${JSON.stringify(value)}`).join("\n"));
-});
-
-// テキストエリアのイベント
+//------------------------------
+// イベントリスナ定義
+//------------------------------
+// チャット
+document.getElementById("send").addEventListener("click", sendGemini);
 (() => {
   const resize = /** @this {HTMLTextAreaElement} */ function () {
     this.style.height = "auto";
@@ -47,33 +68,21 @@ inputUser.addEventListener("input", () => { buttonSend.disabled = inputUser.valu
     }
   });
 });
+// メニュー
+menuClearAllLocalStorage.addEventListener("click", () => { if (confirm("Are you sure?")) localStorage.clear(); });
+menuSetGeminiApiKey.addEventListener("click", () => {
+  const key = prompt("Input Gemini API key.");
+  if (key) gemini.setApiKey(key);
+});
+menuSetCloudinaryApiKey.addEventListener("click", () => {
 
-
-// 送信
-const sendGemini = async () => {
-  const nextUserText = inputUser.value, nextModelText = inputModel.value;
-  inputUser.value = inputModel.value = "";
-  appendUserMessage(nextUserText);
-  const /** @type {K_GeminiContent[]} */ rawContents = [
-    { user: nextUserText },
-    ...nextModelText ? [{ model: nextModelText }] : [],
-  ];
-  const newModelText = await simpleGeminiCreateMessage(rawContents);
-  appendModelMessage(nextModelText + newModelText);
-};
-document.getElementById("send").addEventListener("click", sendGemini);
-
-const appendUserMessage = text => {
-  const /** @type {HTMLElement} */ clone = /**@type{HTMLTemplateElement}*/(document.getElementById("template-user")).content.cloneNode(true);
-  clone.querySelector("article").innerText = text;
-  sectionChat.append(clone);
-};
-const appendModelMessage = markdownText => {
-  const /** @type {HTMLElement} */ clone = /**@type{HTMLTemplateElement}*/(document.getElementById("template-model")).content.cloneNode(true);
-  clone.querySelector("article").innerHTML = marked.parse(markdownText);
-  sectionChat.append(clone);
-};
-
+});
+menuCheckLocalStorage.addEventListener("click", () => {
+  alert(Object.entries(localStorage).map(([key, value], idx) => {
+    const dispValue = JSON.stringify(value).length > 20 ? JSON.stringify(value).slice(0, 20) + "..." : JSON.stringify(value);
+    return `[${idx}] ${JSON.stringify(key)}: ${dispValue}`;
+  }).join("\n"));
+});
 
 
 // 画像ペーストに対応する
