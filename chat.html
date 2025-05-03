@@ -13,10 +13,10 @@
 
   <section id="chat">
     <template id="template-user">
-      <article class="user" contenteditable="true"></article>
+      <article class="user" data-role="user" contenteditable="true"></article>
     </template>
     <template id="template-model">
-      <article class="model" contenteditable="true"></article>
+      <article class="model" data-role="model" data-markdown="" contenteditable="true"></article>
     </template>
   </section>
 
@@ -28,7 +28,7 @@
 
   <aside id="menu">
     <details>
-      <summary>☰ v0.01</summary>
+      <summary>☰ v0.011</summary>
       <nav>
         <ul>
           <li id="clear_all_local_storage" ontouchstart="">clear all localStorage
@@ -40,15 +40,18 @@
     </details>
 
   </aside>
-
   <script>
-    function insertScriptWithoutCache(src) {
-      const elm = document.createElement("script");
-      elm.src = `${src}?t=${Date.now()}`;
-      document.body.appendChild(elm);
+    /** @param {string[]} sources */
+    function insertScriptInOrder(sources) {
+      const loadNext = i => {
+        const script = document.createElement("script");
+        script.src = `${sources[i]}?t=${Date.now()}`;
+        if (i < sources.length - 1) script.onload = () => loadNext(i + 1); // 次のスクリプトを読み込む
+        document.body.appendChild(script);
+      };
+      loadNext(0);
     }
-    insertScriptWithoutCache("library.js");
-    insertScriptWithoutCache("chat.js");
+    insertScriptInOrder(["library.js", "chat.js"]);
   </script>
 
 </body>

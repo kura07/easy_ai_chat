@@ -27,6 +27,7 @@ textarea {
   box-sizing: border-box;
   width: 100%;
   padding: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 #input textarea {
@@ -39,6 +40,7 @@ textarea {
   max-height: 7em;
   font-size: 1em;
   resize: none;
+  background-color: transparent;
 }
 
 #send {

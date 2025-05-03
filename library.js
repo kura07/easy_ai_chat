@@ -48,6 +48,14 @@ class Gemini {
   }
 };
 
+class MarkDown {
+  static #turndownService = new TurndownService();
+  static { this.#turndownService.addRule('horizontalRuleDash', { filter: 'hr', replacement: () => '\n\n---\n\n' }); }
+  /** Markdown => HTML */
+  static parse(markdown) { return marked.parse(markdown); }
+  /** HTML => Markdown */
+  static turndown(html) { return this.#turndownService.turndown(html); }
+}
 
 /**
  * オブジェクトのキーが配列の文字列と一致しているかどうかを確認します。keysに文字列が渡された場合はカンマ区切りで自動的に配列に変換されます。
@@ -61,8 +69,3 @@ const checkObjectKeys = function (obj, keys) {
   const refKeys = (Array.isArray(keys) ? keys : keys.split(",").map(key => key.trim())).slice().sort();
   return objKeys.length === refKeys.length && objKeys.every((key, idx) => key === refKeys[idx]);
 }
-
-// marked.parse(mdText);
-const turndownService = new TurndownService();
-turndownService.addRule('horizontalRuleDash', { filter: 'hr', replacement: () => '\n\n---\n\n' });
-// turndownService.turndown(html);
