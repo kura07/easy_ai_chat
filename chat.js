@@ -31,7 +31,7 @@ const sendGemini = async () => {
     { user: nextUserText },
     ...nextModelText ? [{ model: nextModelText }] : [],
   ];
-  const newModelText = await simpleGeminiCreateMessage(rawContents);
+  const newModelText = await Gemini.createMessage(rawContents);
   appendModelMessage(nextModelText + newModelText);
 };
 const appendUserMessage = text => {

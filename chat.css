@@ -68,10 +68,17 @@ textarea {
   position: fixed;
   top: .5em;
   left: .5em;
+  user-select: none;
+}
+
+#menu details {
   background-color: #eee;
   border-radius: .5em;
   cursor: pointer;
-  user-select: none;
+}
+
+#menu details:not([open]) {
+  opacity: .1;
 }
 
 #menu summary {
