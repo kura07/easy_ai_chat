@@ -14,7 +14,8 @@ const
 const
   inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
   inputModel =  /** @type {HTMLTextAreaElement} */(byId("input-model")),
-  buttonSend = /** @type {HTMLButtonElement} */(byId("send"));
+  buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate")),
+  buttonGenerateFromMiddle = /** @type {HTMLButtonElement} */(byId("generate-from-middle"));
 const
   menuClearAllLocalStorage = byId("clear_all_local_storage"),
   menuSetGeminiApiKey = byId("set_gemini_api_key"),
@@ -33,6 +34,8 @@ const chat = {
     const nextUserText = inputUser.value, nextModelText = inputModel.value;
     inputUser.value = inputModel.value = "";
     chat.appendUserMessage(nextUserText);
+    const elmModelResponse = chat.appendModelMessage(nextModelText);
+    elmModelResponse.dataset.status = "loading";
 
   },
 
@@ -61,12 +64,14 @@ const chat = {
   /**
    * #chat の末尾にアシスタントのメッセージを追加します。
    * @param {string} markdownText
+   * @return {HTMLElement}
    */
   appendModelMessage(markdownText) {
     const /** @type {HTMLElement} */ clone = templateModel.content.cloneNode(true), article = clone.querySelector("article");
     article.innerHTML = markdown.parse(markdownText);
     article.dataset.markdown = markdownText;
     sectionChat.append(clone);
+    return article;
   },
 
   /**
@@ -84,13 +89,19 @@ const chat = {
   document.addEventListener("input", evt => {
     const /** @type {HTMLElement} */ target = evt.target;
     if (target === inputUser) {
-      buttonSend.disabled = inputUser.value === "";
+      buttonGenerate.disabled = inputUser.value === "";
       resize(inputUser);
     }
     else if (target === inputModel) resize(inputModel);
     else if (target.tagName === "ARTICLE" && sectionChat.contains(target)) target.dataset.changed = "true";
   });
 })();
+// focusin
+document.addEventListener("focusin", evt => {
+  const /** @type {HTMLElement} */ target = evt.target;
+  if (target.tagName === "ARTICLE" && sectionChat.contains(target)) {
+  }
+});
 // focusout
 document.addEventListener("focusout", evt => {
   const /** @type {HTMLElement} */ target = evt.target;
@@ -102,7 +113,7 @@ document.addEventListener("focusout", evt => {
 });
 
 // チャット
-document.getElementById("send").addEventListener("click", chat.addNewMessageAndGetResponse);
+buttonGenerate.addEventListener("click", chat.addNewMessageAndGetResponse);
 [inputUser, inputModel].forEach(elm => {
   elm.addEventListener("keydown", evt => {
     if (evt.key === "Enter" && evt.ctrlKey) {
@@ -112,6 +123,7 @@ document.getElementById("send").addEventListener("click", chat.addNewMessageAndG
     }
   });
 });
+buttonGenerateFromMiddle.addEventListener("click", () => alert());
 
 // メニュー
 (() => {

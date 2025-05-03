@@ -20,6 +20,17 @@ textarea {
   padding: .5em;
 }
 
+.model[data-status="loading"]::after {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  background-image: url('https://res.cloudinary.com/dof2yrkux/image/upload/v1746281183/icon/loading.gif');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 #input {
   position: fixed;
   left: 0;
@@ -100,9 +111,13 @@ textarea {
 
 #menu li {
   list-style-type: none;
+}
+
+#menu button {
+  all: unset;
   padding: .5em;
 }
 
-#menu li:active {
+#menu button:active {
   background-color: #ddd;
 }

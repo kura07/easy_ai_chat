@@ -23,24 +23,26 @@
   <section id="input">
     <article><textarea id="input-user" placeholder="ユーザーの入力"></textarea></article>
     <article><textarea id="input-model" placeholder="モデルの出力の固定"></textarea></article>
-    <button id="send" disabled>↑</button>
+    <button id="generate" disabled>↑</button>
   </section>
 
+  <aside><button id="generate-from-middle" style="display: none;">ここから生成</button></aside>
+
   <aside id="menu">
-    <details>
-      <summary>☰ v0.013</summary>
+    <details open>
+      <summary>☰ v0.014</summary>
       <nav>
         <ul>
-          <li id="clear_all_local_storage" ontouchstart="">clear all localStorage
-            <li id="set_gemini_api_key" ontouchstart="">set Gemini API key
-              <li id="set_cloudinary_api_key" ontouchstart="">set Cloudinary API key
-                <li id="check_local_stotage" ontouchstart="">check localStorage
-            <li id="delete_messages" ontouchstart="">delete messages
+          <li><button id="clear_all_local_storage" ontouchstart="">clear all localStorage</button>
+          <li><button id="set_gemini_api_key" ontouchstart="">set Gemini API key</button>
+          <li><button id="set_cloudinary_api_key" ontouchstart="">set Cloudinary API key</button>
+          <li><button id="check_local_stotage" ontouchstart="">check localStorage</button>
+          <li><button id="delete_messages" ontouchstart="">delete messages</button>
         </ul>
       </nav>
     </details>
-
   </aside>
+
   <script>
     /** @param {string[]} sources */
     function insertScriptInOrder(sources) {
