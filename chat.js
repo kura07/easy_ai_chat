@@ -66,6 +66,7 @@ const chat = {
     if (res.error) { alert(JSON.stringify(res.originalResponse)); }
     else {
       chat.updateModelMessage(articleModelMessage, inputTextModel + res.text);
+      articleModelMessage.scrollIntoView({ behavior: "smooth", block: "start" });
       chat.saveChatMessages();
     }
   },
