@@ -23,6 +23,7 @@ const
   menuSetGeminiApiKey = byId("set_gemini_api_key"),
   menuSetCloudinaryApiKey = byId("set_cloudinary_api_key"),
   menuCheckLocalStorage = byId("check_local_stotage"),
+  menuOverwriteMessages = byId("overwrite_messages"),
   menuDeleteMessages = byId("delete_messages");
 
 //------------------------------
@@ -277,6 +278,13 @@ document.body.addEventListener("click", evt => {
       const dispValue = JSON.stringify(value).length > 20 ? JSON.stringify(value).slice(0, 20) + "..." : JSON.stringify(value);
       return `[${idx}] ${JSON.stringify(key)}: ${dispValue}`;
     }).join("\n"));
+  });
+  addListener(menuOverwriteMessages, () => {
+    const messagesText = prompt("new messages? (JSON)");
+    try { JSON.parse(messagesText); }
+    catch { alert("invalid JSON"); }
+    localStorage.setItem(STORAGE_MESSAGES, messagesText);
+    location.reload();
   });
   addListener(menuDeleteMessages, () => {
     if (!confirm("Are you sure?")) return;
