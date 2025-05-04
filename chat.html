@@ -28,20 +28,12 @@
 
     <template id="template-user-image">
       <article class="user-image" data-role="user-image">
-        <figure>
+        <figure data-uploading="true">
           <img src="https://res.cloudinary.com/dof2yrkux/image/upload/v1746360174/ai_news/yedcfwgxq5rggg45j8oo.jpg">
           <button class="button-delete-image">✕</button>
         </figure>
       </article>
     </template>
-
-
-    <article class="user-image" data-role="user-image">
-      <figure>
-        <img src="https://res.cloudinary.com/dof2yrkux/image/upload/v1746360174/ai_news/yedcfwgxq5rggg45j8oo.jpg">
-        <button class="button-delete-image">✕</button>
-      </figure>
-    </article>
 
     <button id="generate-from-middle" hidden>↻</button>
   </section>
@@ -51,6 +43,7 @@
     <article><textarea id="input-user" placeholder="ユーザーの入力"></textarea></article>
     <article><textarea id="input-model" placeholder="モデルの出力の固定" hidden></textarea></article>
     <button id="generate" disabled>↑</button>
+    <aside id="error-message" hidden></aside>
   </section>
 
   <aside id="menu">

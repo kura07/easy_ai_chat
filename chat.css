@@ -58,6 +58,23 @@ figure {
   padding: .5em;
 }
 
+figure[data-uploading="true"] {
+  opacity: .5;
+}
+
+figure[data-uploading="true"]::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 20px);
+  left: calc(50% - 20px);
+  width: 40px;
+  height: 40px;
+  background-image: url('https://res.cloudinary.com/dof2yrkux/image/upload/v1746281183/icon/loading.gif');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-blend-mode: darken;
+}
+
 figure img {
   width: 100px;
   height: 100px;
@@ -135,6 +152,20 @@ figure .button-delete-image {
 
 #generate:disabled {
   background-color: #aaa;
+}
+
+#error-message {
+  position: absolute;
+  top: -5rem;
+  left: 2rem;
+  right: 2rem;
+  height: 5rem;
+  white-space: pre;
+  overflow-y: scroll;
+  border: 1px solid #faa;
+  padding: .5em;
+  background-color: #fee;
+  font-size: .5em;
 }
 
 #menu {

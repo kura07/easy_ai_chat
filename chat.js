@@ -11,12 +11,13 @@ const
   sectionChat = byId("chat"),
   templateUser = /** @type {HTMLTemplateElement} */(byId("template-user")),
   templateUserImage = /** @type {HTMLTemplateElement} */(byId("template-user-image")),
-  templateModel = /** @type {HTMLTemplateElement} */(byId("template-model"));
+  templateModel = /** @type {HTMLTemplateElement} */(byId("template-model")),
+  buttonGenerateFromMiddle = /** @type {HTMLButtonElement} */(byId("generate-from-middle"));
 const
   inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
   inputModel =  /** @type {HTMLTextAreaElement} */(byId("input-model")),
   buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate")),
-  buttonGenerateFromMiddle = /** @type {HTMLButtonElement} */(byId("generate-from-middle"));
+  asideErrorMessage = /** @type {HTMLElement} */(byId("error-message"));
 const
   menuClearAllLocalStorage = byId("clear_all_local_storage"),
   menuSetGeminiApiKey = byId("set_gemini_api_key"),
@@ -58,13 +59,20 @@ const chat = {
    * Gemini APIに送信してメッセージを取得します。
    * @param {HTMLElement} articleModelMessage
    * @param {string} [inputTextModel]
+   * @param {number} [tryTimes]
    */
-  async fetchMessage(articleModelMessage, inputTextModel = "") {
+  async fetchMessage(articleModelMessage, inputTextModel = "", tryTimes = 0) {
     sectionChat.querySelectorAll("article").forEach(a => { if (a !== articleModelMessage && a.innerText.trim() === "") a.remove(); });
     articleModelMessage.dataset.status = "loading";
     const res = await gemini.createMessage(chat.getMessagesFromChatSection());
     delete articleModelMessage.dataset.status;
-    if (res.error) { alert(JSON.stringify(res.originalResponse)); }
+    if (res.error) {
+      tryTimes++;
+      asideErrorMessage.hidden = false;
+      asideErrorMessage.innerText = `[${tryTimes}] ${new Date().toLocaleTimeString()}\n${JSON.stringify(res.originalResponse, null, 2)}`;
+      if (tryTimes < 3) return await chat.fetchMessage(articleModelMessage, inputTextModel, tryTimes);
+      else alert("3度トライしましたがすべて失敗しました。");
+    }
     else {
       chat.updateModelMessage(articleModelMessage, inputTextModel + res.text);
       articleModelMessage.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -79,8 +87,12 @@ const chat = {
    */
   getMessagesFromChatSection() {
     const articles = [...sectionChat.querySelectorAll("article")];
-    return articles.map(/** @return {K_GeneralAiChatMessage} */a => {
+    return articles.flatMap(/** @return {K_GeneralAiChatMessage} */a => {
       if (a.dataset.role === "user") return { user: a.innerText };
+      if (a.dataset.role === "user-image") return [...a.querySelectorAll("figure")].map(fig => {
+        if (fig.dataset.uploading === "true") return null;
+        return fig.querySelector("img").src;
+      }).filter(Boolean).map(url => ({ user: { url } }));
       if (a.dataset.role === "model") return { assistant: a.dataset.markdown };
     }).filter(Boolean);
   },
@@ -93,6 +105,18 @@ const chat = {
     const /** @type {HTMLElement} */ clone = templateUser.content.cloneNode(true), article = clone.querySelector("article");
     article.innerText = text;
     sectionChat.append(clone);
+  },
+
+  /**
+   * #chat の末尾にユーザー画像メッセージを追加します。
+   * @param {string} url
+   */
+  appendUserImage(url) {
+    const clone = templateUserImage.content.cloneNode(true), /** @type {HTMLElement} */figure = clone.querySelector("figure"), image = clone.querySelector("img");
+    delete figure.dataset.uploading;
+    image.src = url;
+    if (sectionChat.lastElementChild.dataset.role === "user-image") sectionChat.lastElementChild.append(figure);
+    else sectionChat.append(clone);
   },
 
   /**
@@ -194,32 +218,41 @@ document.addEventListener("keydown", evt => {
   }
 });
 buttonGenerateFromMiddle.addEventListener("click", evt => { chat.regenerageMessage(); });
+asideErrorMessage.addEventListener("click", () => { asideErrorMessage.hidden = true; });
 
 // 画像・ペースト
-document.addEventListener("paste", evt => {
+document.addEventListener("paste", async evt => {
   evt.preventDefault();
+
   const editableRoot = /** @type {HTMLElement} */(evt.target).closest('[contenteditable="true"], textarea');
   if (!editableRoot) return;
-
   if (editableRoot === inputUser || editableRoot.tagName === "ARTICLE" && sectionChat.contains(editableRoot) && editableRoot.dataset.role === "user") {
-    console.log([...evt.clipboardData.items].map(item => item.type))
     const images = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"));
     if (images.length) for (const image of images) {
       const blob = image.getAsFile();
-      const clone = templateUserImage.content.cloneNode(true);
-      clone.querySelector("img").src = URL.createObjectURL(blob);
-      if (editableRoot.previousElementSibling?.dataset.role === "user-image") {
-        editableRoot.previousElementSibling.append(clone.querySelector("figure"));
-      }
-      else {
-        editableRoot.insertAdjacentElement("beforebegin", clone.querySelector("article"));  
-      }
+      const clone = templateUserImage.content.cloneNode(true), /** @type {HTMLElement} */elmFigure = clone.querySelector("figure"), elmImage = clone.querySelector("img");
+      elmImage.src = URL.createObjectURL(blob);
+      if (editableRoot.previousElementSibling?.dataset.role === "user-image") editableRoot.previousElementSibling.append(elmFigure);
+      else editableRoot.insertAdjacentElement("beforebegin", clone.querySelector("article"));
+
+      const res = await cloudinary.upload(blob, { folder: "easy_ai_chat" });
+      delete elmFigure.dataset.uploading;
+      elmImage.src = res.url;
+      if (sectionChat.contains(editableRoot)) chat.saveChatMessages();
       return;
     }
   }
 
   const text = evt.clipboardData.getData("text/plain");
   if (text) document.execCommand("insertText", false, text);
+});
+document.body.addEventListener("click", evt => {
+  const /** @type {HTMLElement} */ target = evt.target;
+  if (target.classList.contains("button-delete-image")) {
+    const article = target.closest("article");
+    target.closest("figure").remove();
+    if (sectionChat.contains(article) && article.childElementCount === 0) article.remove();
+  }
 });
 
 // メニュー
@@ -229,7 +262,16 @@ document.addEventListener("paste", evt => {
   addListener(menuSetGeminiApiKey, () => {
     const key = prompt("Input Gemini API key.");
     if (key) gemini.setApiKey(key);
-  })
+  });
+  addListener(menuSetCloudinaryApiKey, () => {
+    const cloudName = prompt("Input Cloudinary Cloud Name.");
+    if (!cloudName) return;
+    const apiKey = prompt("Input Cloudinary API key.");
+    if (!apiKey) return;
+    const apiSecret = prompt("Input Cloudinary API secret.");
+    if (!apiSecret) return;
+    cloudinary.init(cloudName, apiKey, apiSecret);
+  });
   addListener(menuCheckLocalStorage, () => {
     alert(Object.entries(localStorage).map(([key, value], idx) => {
       const dispValue = JSON.stringify(value).length > 20 ? JSON.stringify(value).slice(0, 20) + "..." : JSON.stringify(value);
@@ -249,7 +291,8 @@ document.addEventListener("paste", evt => {
 ((/** @type {K_GeneralAiChatMessage[]} */messages) => {
   if (!messages) return;
   messages.forEach(m => {
-    if (m.user) chat.appendUserMessage(m.user);
+    if (m.user && typeof m.user === "string") chat.appendUserMessage(m.user);
+    if (m.user?.url) chat.appendUserImage(m.user.url);
     if (m.assistant) chat.appendModelMessage(m.assistant);
   });
 })(JSON.parse(localStorage.getItem(STORAGE_MESSAGES)));
