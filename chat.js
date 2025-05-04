@@ -37,6 +37,8 @@ const chat = {
     chat.appendUserMessage(inputTextUser);
     const articleModelMessage = chat.appendModelMessage(inputTextModel);
     chat.saveChatMessages();
+    arrangeInputForm();
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
     await chat.fetchMessage(articleModelMessage, inputTextModel);
   },
 
@@ -122,15 +124,16 @@ const chat = {
 // イベントリスナ定義
 //------------------------------
 // input
-(() => {
+const arrangeInputForm = () => {
   const resize = /** @param {HTMLTextAreaElement} elm */ elm => { elm.style.height = "auto"; elm.style.height = `${elm.scrollHeight}px`; };
+  buttonGenerate.disabled = inputUser.value === "";
+  resize(inputUser);
+  resize(inputModel);
+};
+(() => {
   document.addEventListener("input", evt => {
     const /** @type {HTMLElement} */ target = evt.target;
-    if (target === inputUser) {
-      buttonGenerate.disabled = inputUser.value === "";
-      resize(inputUser);
-    }
-    else if (target === inputModel) resize(inputModel);
+    if (target === inputUser || target === inputModel) arrangeInputForm();
     else if (target.tagName === "ARTICLE" && sectionChat.contains(target)) target.dataset.changed = "true";
   });
 })();
@@ -160,7 +163,7 @@ document.addEventListener("keydown", evt => {
     if (evt.key === "Enter" && evt.ctrlKey) {
       evt.preventDefault();
       chat.addNewMessage();
-      inputUser.dispatchEvent(new Event("input"));
+      arrangeInputForm();
     }
   }
   if (target.tagName === "ARTICLE" && sectionChat.contains(target)) {
