@@ -1,7 +1,7 @@
 /// <reference path="./jsdoc.js" />
 "use strict";
 
-const STORAGE_MESSAGES = "messages";
+const STORAGE_MESSAGES = (session => session ? `messages-${session}` : "messages")(new URLSearchParams(location.search).get("session"));
 
 //------------------------------
 // 要素取得
