@@ -1,3 +1,12 @@
+[hidden] {
+  display: none !important;
+}
+
+html {
+  margin: 0 auto 50%;
+  max-width: 800px;
+}
+
 body,
 textarea {
   font-family: "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Yu Gothic", "Meiryo", sans-serif;
@@ -50,10 +59,11 @@ textarea {
   position: fixed;
   left: 0;
   bottom: 0;
+  border-top: 1px solid #eee;
   box-sizing: border-box;
   width: 100%;
   padding: 8px;
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #fff;
 }
 
 #input textarea {

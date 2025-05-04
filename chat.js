@@ -30,13 +30,32 @@ const chat = {
   /**
    * 新しいメッセージを追加して、テキスト生成AIのレスポンスを得ます。
    */
-  async addNewMessageAndGetResponse() {
-    const nextUserText = inputUser.value, nextModelText = inputModel.value;
+  async addNewMessage() {
+    const inputTextUser = inputUser.value, inputTextModel = inputModel.value;
     inputUser.value = inputModel.value = "";
-    chat.appendUserMessage(nextUserText);
-    const elmModelResponse = chat.appendModelMessage(nextModelText);
-    elmModelResponse.dataset.status = "loading";
+    buttonGenerateFromMiddle.hidden = true;
+    chat.appendUserMessage(inputTextUser);
+    const articleModelMessage = chat.appendModelMessage(inputTextModel);
+    articleModelMessage.dataset.status = "loading";
+    const responseTextModel = await gemini.createMessage(chat.getMessagesFromChatSection());
+    chat.updateModelMessage(articleModelMessage, inputTextModel + responseTextModel);
+    delete articleModelMessage.dataset.status;
+    chat.saveChatMessages();
+  },
 
+  /**
+   * #generate-from-middleが存在する途中からメッセージを生成します。以前のメッセージは削除されます。
+   */
+  async regenerageMessage() {
+    while (buttonGenerateFromMiddle.nextElementSibling) buttonGenerateFromMiddle.nextElementSibling.remove();
+    buttonGenerateFromMiddle.hidden = true;
+    const articleModelMessage = sectionChat.lastElementChild.dataset.role === "model" ? sectionChat.lastElementChild : chat.appendModelMessage("");
+    const inputTextModel = articleModelMessage.dataset.markdown;
+    articleModelMessage.dataset.status = "loading";
+    const responseTextModel = await gemini.createMessage(chat.getMessagesFromChatSection());
+    chat.updateModelMessage(articleModelMessage, inputTextModel + responseTextModel);
+    delete articleModelMessage.dataset.status;
+    chat.saveChatMessages();
   },
 
   /**
@@ -68,10 +87,19 @@ const chat = {
    */
   appendModelMessage(markdownText) {
     const /** @type {HTMLElement} */ clone = templateModel.content.cloneNode(true), article = clone.querySelector("article");
-    article.innerHTML = markdown.parse(markdownText);
-    article.dataset.markdown = markdownText;
+    chat.updateModelMessage(article, markdownText);
     sectionChat.append(clone);
     return article;
+  },
+
+  /**
+   * 指定された要素（通常は<article class="model">）のメッセージ内容を更新します。
+   * @param {HTMLElement} targetElement
+   * @param {string} markdownText
+   */
+  updateModelMessage(targetElement, markdownText) {
+    targetElement.innerHTML = markdown.parse(markdownText);
+    targetElement.dataset.markdown = markdownText;
   },
 
   /**
@@ -109,23 +137,23 @@ document.addEventListener("focusout", evt => {
   const /** @type {HTMLElement} */ target = evt.target;
   if (target.tagName === "ARTICLE" && sectionChat.contains(target) && target.dataset.changed === "true") {
     delete target.dataset.changed;
-    if (target.dataset.role === "model") target.dataset.markdown = markdown.turndown(target.innerHTML);
+    if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
     chat.saveChatMessages();
   }
 });
 
 // チャット
-buttonGenerate.addEventListener("click", chat.addNewMessageAndGetResponse);
+buttonGenerate.addEventListener("click", chat.addNewMessage);
 [inputUser, inputModel].forEach(elm => {
   elm.addEventListener("keydown", evt => {
     if (evt.key === "Enter" && evt.ctrlKey) {
       evt.preventDefault();
-      chat.addNewMessageAndGetResponse();
+      chat.addNewMessage();
       inputUser.dispatchEvent(new Event("input"));
     }
   });
 });
-buttonGenerateFromMiddle.addEventListener("click", () => alert());
+buttonGenerateFromMiddle.addEventListener("click", evt => { chat.regenerageMessage(); });
 
 // メニュー
 (() => {

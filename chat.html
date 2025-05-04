@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>簡易AIチャット</title>
+  <title>Easy AI Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <link rel="stylesheet" href="chat.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -18,7 +18,7 @@
     <template id="template-model">
       <article class="model" data-role="model" data-markdown="" contenteditable="true"></article>
     </template>
-    <button id="generate-from-middle">↻</button>
+    <button id="generate-from-middle" hidden>↻</button>
   </section>
 
   <section id="input">
@@ -29,7 +29,7 @@
 
   <aside id="menu">
     <details>
-      <summary>☰ v0.014</summary>
+      <summary>☰ v0.015</summary>
       <nav>
         <ul>
           <li><button id="clear_all_local_storage" ontouchstart="">clear all localStorage</button>
