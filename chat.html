@@ -4,7 +4,12 @@
 <head>
   <title>Easy AI Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="chat.css">
+  <script>
+    const link = document.createElement('link');
+    link.rel = "stylesheet";
+    link.href = `chat.css?t=${Date.now()}`;
+    document.head.appendChild(link);
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.min.js"></script>
 </head>
@@ -50,7 +55,7 @@
 
   <aside id="menu">
     <details>
-      <summary>☰ v0.023</summary>
+      <summary>☰ v0.024</summary>
       <nav>
         <ul>
           <li><button id="clear_all_local_storage" ontouchstart="">clear all localStorage</button>
