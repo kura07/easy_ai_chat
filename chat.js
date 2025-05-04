@@ -67,6 +67,7 @@ const chat = {
     else {
       chat.updateModelMessage(articleModelMessage, inputTextModel + res.text);
       articleModelMessage.scrollIntoView({ behavior: "smooth", block: "start" });
+      autoScroll = true;
       chat.saveChatMessages();
     }
   },
@@ -120,6 +121,23 @@ const chat = {
    */
   saveChatMessages() { localStorage.setItem(STORAGE_MESSAGES, JSON.stringify(chat.getMessagesFromChatSection())); },
 };
+
+
+
+//------------------------------
+// オートスクロール
+//------------------------------
+let autoScroll = false;
+const smoothAutoScroll = () => {
+  if (autoScroll) window.scrollBy(0, 1);
+  setTimeout(smoothAutoScroll, 1000 / 20);
+};
+const stopAutoScroll = () => { autoScroll = false; };
+window.addEventListener('wheel', stopAutoScroll);
+window.addEventListener('touchstart', stopAutoScroll);
+window.addEventListener('keydown', stopAutoScroll);
+smoothAutoScroll();
+
 
 //------------------------------
 // イベントリスナ定義
