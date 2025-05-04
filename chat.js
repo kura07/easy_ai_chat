@@ -155,7 +155,7 @@ const chat = {
 let autoScroll = false;
 const smoothAutoScroll = () => {
   if (autoScroll) window.scrollBy(0, 1);
-  setTimeout(smoothAutoScroll, 1000 / 20);
+  setTimeout(smoothAutoScroll, 1000 / 30);
 };
 const stopAutoScroll = () => { autoScroll = false; };
 window.addEventListener('wheel', stopAutoScroll);
