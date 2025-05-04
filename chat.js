@@ -10,6 +10,7 @@ const byId = id => document.getElementById(id);
 const
   sectionChat = byId("chat"),
   templateUser = /** @type {HTMLTemplateElement} */(byId("template-user")),
+  templateUserImage = /** @type {HTMLTemplateElement} */(byId("template-user-image")),
   templateModel = /** @type {HTMLTemplateElement} */(byId("template-model"));
 const
   inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
@@ -81,7 +82,7 @@ const chat = {
     return articles.map(/** @return {K_GeneralAiChatMessage} */a => {
       if (a.dataset.role === "user") return { user: a.innerText };
       if (a.dataset.role === "model") return { assistant: a.dataset.markdown };
-    });
+    }).filter(Boolean);
   },
 
   /**
@@ -194,6 +195,33 @@ document.addEventListener("keydown", evt => {
 });
 buttonGenerateFromMiddle.addEventListener("click", evt => { chat.regenerageMessage(); });
 
+// 画像・ペースト
+document.addEventListener("paste", evt => {
+  evt.preventDefault();
+  const editableRoot = /** @type {HTMLElement} */(evt.target).closest('[contenteditable="true"], textarea');
+  if (!editableRoot) return;
+
+  if (editableRoot === inputUser || editableRoot.tagName === "ARTICLE" && sectionChat.contains(editableRoot) && editableRoot.dataset.role === "user") {
+    console.log([...evt.clipboardData.items].map(item => item.type))
+    const images = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"));
+    if (images.length) for (const image of images) {
+      const blob = image.getAsFile();
+      const clone = templateUserImage.content.cloneNode(true);
+      clone.querySelector("img").src = URL.createObjectURL(blob);
+      if (editableRoot.previousElementSibling?.dataset.role === "user-image") {
+        editableRoot.previousElementSibling.append(clone.querySelector("figure"));
+      }
+      else {
+        editableRoot.insertAdjacentElement("beforebegin", clone.querySelector("article"));  
+      }
+      return;
+    }
+  }
+
+  const text = evt.clipboardData.getData("text/plain");
+  if (text) document.execCommand("insertText", false, text);
+});
+
 // メニュー
 (() => {
   const addListener = /** @param {HTMLElement} elm */(elm, handler) => { elm.addEventListener("click", handler); };
@@ -214,13 +242,6 @@ buttonGenerateFromMiddle.addEventListener("click", evt => { chat.regenerageMessa
     location.reload();
   });
 })();
-
-// 画像ペーストに対応する
-const onPasteImage = function (evt) {
-  const images = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"));
-  if (images.length === 0) return;
-};
-inputUser.addEventListener("paste", onPasteImage);
 
 //------------------------------
 // 初期表示

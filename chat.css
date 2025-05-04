@@ -40,6 +40,41 @@ textarea {
   background-repeat: no-repeat;
 }
 
+.user-image {
+  display: flex;
+  flex-wrap: wrap;
+  margin: .5em 0;
+  gap: 5px;
+}
+
+#chat .user-image {
+  justify-content: end;
+}
+
+figure {
+  position: relative;
+  margin: 0;
+  border: 1px solid #aaa;
+  padding: .5em;
+}
+
+figure img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+figure .button-delete-image {
+  position: absolute;
+  top: -.5em;
+  right: -.5em;
+  width: 2em;
+  height: 2em;
+  border-radius: 1em;
+  border: 1px solid #aaa;
+  background-color: #fff;
+  cursor: pointer;
+}
 
 #generate-from-middle {
   display: block;
