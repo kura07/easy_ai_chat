@@ -31,6 +31,21 @@ textarea {
   background-repeat: no-repeat;
 }
 
+
+#generate-from-middle {
+  display: block;
+  margin: .5em auto 1em;
+  border: none;
+  background-color: #008;
+  color: #fff;
+  width: 2em;
+  height: 2em;
+  padding: .25em;
+  border-radius: 1em;
+  font-weight: bold;
+  font-size: 1em;
+}
+
 #input {
   position: fixed;
   left: 0;
@@ -54,7 +69,7 @@ textarea {
   background-color: transparent;
 }
 
-#send {
+#generate {
   position: absolute;
   bottom: .5em;
   right: .5em;
@@ -69,11 +84,11 @@ textarea {
   font-size: 1.5em;
 }
 
-#send:active {
+#generate:active {
   background-color: #888;
 }
 
-#send:disabled {
+#generate:disabled {
   background-color: #aaa;
 }
 

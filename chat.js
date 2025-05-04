@@ -100,6 +100,8 @@ const chat = {
 document.addEventListener("focusin", evt => {
   const /** @type {HTMLElement} */ target = evt.target;
   if (target.tagName === "ARTICLE" && sectionChat.contains(target)) {
+    buttonGenerateFromMiddle.hidden = false;
+    target.insertAdjacentElement("afterend", buttonGenerateFromMiddle);
   }
 });
 // focusout
