@@ -76,6 +76,7 @@ const gemini = {
    * Gemini APIに非同期でfetchします。簡易バージョン。
    * @param {K_GeneralAiChatMessage[]} messages
    * @param {{model:K_EnumGeminiModel, temperature:number}} obj
+   * @returns {{responceCode?:number, success?:boolean, error?:boolean, originalResponse?:K_GeminiOriginalResponse, text?:string}}
    */
   async createMessage(messages, { model = "gemini-2.5-flash-preview-04-17", temperature = 1 } = {}) {
 
@@ -92,14 +93,22 @@ const gemini = {
     });
 
     // fetch
-    const body = JSON.stringify({ contents, generationConfig: { temperature } });
-    const httpRes = await fetch(`https:/\/generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gemini._apiKey}`, {
-      method: "post", body,
-    });
+    try {
+      const body = JSON.stringify({ contents, generationConfig: { temperature } });
+      const httpRes = await fetch(`https:/\/generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gemini._apiKey}`, {
+        method: "post", body,
+      });
 
-    const /** @type {K_GeminiOriginalResponse} */ json = await httpRes.json();
-    console.log(json);
-    return json.candidates[0].content.parts[0].text;
+      const /** @type {K_GeminiOriginalResponse} */ json = await httpRes.json();
+      console.log(httpRes.status, json);
+      if (!httpRes.ok) return { responceCode: httpRes.status, error: true, originalResponse: json };
+
+      const text = json.candidates?.[0].content.parts?.[0].text || "";
+      return { responceCode: httpRes.status, success: true, originalResponse: json, text };
+    }
+    catch (err) {
+      return { error: true, originalResponse: err.stack };
+    }
   }
 };
 

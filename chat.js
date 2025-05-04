@@ -36,11 +36,8 @@ const chat = {
     buttonGenerateFromMiddle.hidden = true;
     chat.appendUserMessage(inputTextUser);
     const articleModelMessage = chat.appendModelMessage(inputTextModel);
-    articleModelMessage.dataset.status = "loading";
-    const responseTextModel = await gemini.createMessage(chat.getMessagesFromChatSection());
-    chat.updateModelMessage(articleModelMessage, inputTextModel + responseTextModel);
-    delete articleModelMessage.dataset.status;
     chat.saveChatMessages();
+    await chat.fetchMessage(articleModelMessage, inputTextModel);
   },
 
   /**
@@ -51,11 +48,24 @@ const chat = {
     buttonGenerateFromMiddle.hidden = true;
     const articleModelMessage = sectionChat.lastElementChild.dataset.role === "model" ? sectionChat.lastElementChild : chat.appendModelMessage("");
     const inputTextModel = articleModelMessage.dataset.markdown;
+    await chat.fetchMessage(articleModelMessage, inputTextModel);
+  },
+
+  /**
+   * Gemini APIに送信してメッセージを取得します。
+   * @param {HTMLElement} articleModelMessage
+   * @param {string} [inputTextModel]
+   */
+  async fetchMessage(articleModelMessage, inputTextModel = "") {
+    sectionChat.querySelectorAll("article").forEach(a => { if (a !== articleModelMessage && a.innerText.trim() === "") a.remove(); });
     articleModelMessage.dataset.status = "loading";
-    const responseTextModel = await gemini.createMessage(chat.getMessagesFromChatSection());
-    chat.updateModelMessage(articleModelMessage, inputTextModel + responseTextModel);
+    const res = await gemini.createMessage(chat.getMessagesFromChatSection());
     delete articleModelMessage.dataset.status;
-    chat.saveChatMessages();
+    if (res.error) { alert(JSON.stringify(res.originalResponse)); }
+    else {
+      chat.updateModelMessage(articleModelMessage, inputTextModel + res.text);
+      chat.saveChatMessages();
+    }
   },
 
   /**
@@ -144,14 +154,21 @@ document.addEventListener("focusout", evt => {
 
 // チャット
 buttonGenerate.addEventListener("click", chat.addNewMessage);
-[inputUser, inputModel].forEach(elm => {
-  elm.addEventListener("keydown", evt => {
+document.addEventListener("keydown", evt => {
+  const /** @type {HTMLElement} */ target = evt.target;
+  if (target === inputUser || target === inputModel) {
     if (evt.key === "Enter" && evt.ctrlKey) {
       evt.preventDefault();
       chat.addNewMessage();
       inputUser.dispatchEvent(new Event("input"));
     }
-  });
+  }
+  if (target.tagName === "ARTICLE" && sectionChat.contains(target)) {
+    if (evt.key === "Enter" && evt.ctrlKey) {
+      evt.preventDefault();
+      chat.regenerageMessage();
+    }
+  }
 });
 buttonGenerateFromMiddle.addEventListener("click", evt => { chat.regenerageMessage(); });
 
