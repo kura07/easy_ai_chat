@@ -9,7 +9,7 @@ html {
 
 body,
 textarea {
-  font-family: "Meiryo", "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Yu Gothic", sans-serif;
+  font-family: "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Meiryo", sans-serif;
 }
 
 #chat {
