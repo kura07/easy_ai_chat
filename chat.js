@@ -67,7 +67,7 @@ const chat = {
     else {
       chat.updateModelMessage(articleModelMessage, inputTextModel + res.text);
       articleModelMessage.scrollIntoView({ behavior: "smooth", block: "start" });
-      autoScroll = true;
+      setTimeout(() => { autoScroll = true; }, 1000);
       chat.saveChatMessages();
     }
   },
