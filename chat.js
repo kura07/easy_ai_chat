@@ -113,9 +113,10 @@ const chat = {
    * @param {string} url
    */
   appendUserImage(url) {
-    const clone = templateUserImage.content.cloneNode(true), /** @type {HTMLElement} */figure = clone.querySelector("figure"), image = clone.querySelector("img");
+    const clone = templateUserImage.content.cloneNode(true), /** @type {HTMLElement} */figure = clone.querySelector("figure"),
+      a = clone.querySelector("a"), image = clone.querySelector("img");
     delete figure.dataset.uploading;
-    image.src = url;
+    a.href = image.src = url;
     if (sectionChat.lastElementChild.dataset.role === "user-image") sectionChat.lastElementChild.append(figure);
     else sectionChat.append(clone);
   },
@@ -304,3 +305,14 @@ document.body.addEventListener("click", evt => {
     if (m.assistant) chat.appendModelMessage(m.assistant);
   });
 })(JSON.parse(localStorage.getItem(STORAGE_MESSAGES)));
+
+(async () => {
+  console.time(0);
+  const res = await fetch("https://script.google.com/macros/s/AKfycbz2282hQH5BAA6ZBhgLxzriYEjsRgp8MydQzf9NPBjLIKoTzBC-16wLpWGmzmvqnxWe/exec", {
+    method: "post",
+    body: JSON.stringify({ action: "update", sessionId: "test" + Math.random(), sectionName: "foo", newMessages: chat.getMessagesFromChatSection() })
+  });
+  const output = await res.json();
+  console.log(output);
+  console.timeEnd(0);
+})();
