@@ -1,7 +1,22 @@
 /// <reference path="./jsdoc.js" />
 "use strict";
 
+// JSDoc v0.11
+/**
+ * @typedef {object} Session
+ * @prop {string} id
+ * @prop {string} name
+ * @prop {Date} timestamp
+ * @prop {string} [messages]
+ */
+/**
+ * @typedef {object} SessionList
+ * @prop {Session[]} list
+ * @prop {Session} latest
+ */
+
 const STORAGE_MESSAGES = (session => session ? `messages-${session}` : "messages")(new URLSearchParams(location.search).get("session"));
+const STORAGE_URL = "storage_url";
 
 //------------------------------
 // 要素取得
@@ -12,24 +27,39 @@ const
   templateUser = /** @type {HTMLTemplateElement} */(byId("template-user")),
   templateUserImage = /** @type {HTMLTemplateElement} */(byId("template-user-image")),
   templateModel = /** @type {HTMLTemplateElement} */(byId("template-model")),
-  buttonGenerateFromMiddle = /** @type {HTMLButtonElement} */(byId("generate-from-middle"));
+  buttonGenerateFromMiddle = /** @type {HTMLButtonElement} */(byId("generate-from-middle")),
+  templateIconUpdaing = /** @type {HTMLTemplateElement} */(byId("template-updating"));
 const
   inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
   inputModel =  /** @type {HTMLTextAreaElement} */(byId("input-model")),
   buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate")),
   asideErrorMessage = /** @type {HTMLElement} */(byId("error-message"));
-const
-  menuClearAllLocalStorage = byId("clear_all_local_storage"),
-  menuSetGeminiApiKey = byId("set_gemini_api_key"),
-  menuSetCloudinaryApiKey = byId("set_cloudinary_api_key"),
-  menuCheckLocalStorage = byId("check_local_stotage"),
-  menuOverwriteMessages = byId("overwrite_messages"),
-  menuDeleteMessages = byId("delete_messages");
 
 //------------------------------
 // チャット処理関数たち
 //------------------------------
 const chat = {
+
+  _sessionId: null,
+  _sessionName: null,
+  storageUrl: localStorage.getItem(STORAGE_URL),
+
+  /**
+   * チャット画面を初期化します。
+   * @param {string} sessionId 
+   * @param {string} sessionName 
+   * @param {K_GeneralAiChatMessage[]} messages 
+   */
+  init(sessionId, sessionName, messages = []) {
+    chat._sessionId = sessionId;
+    chat._sessionName = sessionName;
+    messages.forEach(m => {
+      if (m.user && typeof m.user === "string") chat.appendUserMessage(m.user);
+      if (m.user?.url) chat.appendUserImage(m.user.url);
+      if (m.assistant) chat.appendModelMessage(m.assistant);
+    });
+  },
+
   /**
    * 新しいメッセージを追加して、テキスト生成AIのレスポンスを得ます。
    */
@@ -64,9 +94,9 @@ const chat = {
    */
   async fetchMessage(articleModelMessage, inputTextModel = "", tryTimes = 0) {
     sectionChat.querySelectorAll("article").forEach(a => { if (a !== articleModelMessage && a.innerText.trim() === "") a.remove(); });
-    articleModelMessage.dataset.status = "loading";
+    articleModelMessage.dataset.loading = "true";
     const res = await gemini.createMessage(chat.getMessagesFromChatSection());
-    delete articleModelMessage.dataset.status;
+    delete articleModelMessage.dataset.loading;
     if (res.error) {
       tryTimes++;
       asideErrorMessage.hidden = false;
@@ -146,7 +176,12 @@ const chat = {
   /**
    * #chat の内容を localStorage に保存します。
    */
-  saveChatMessages() { localStorage.setItem(STORAGE_MESSAGES, JSON.stringify(chat.getMessagesFromChatSection())); },
+  async saveChatMessages() {
+    const clone = templateIconUpdaing.content.cloneNode(true), figure = clone.querySelector("figure");
+    templateIconUpdaing.parentElement.append(clone);
+    await fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId: chat._sessionId, timestamp: Date.now(), newMessages: chat.getMessagesFromChatSection(), newSessionName: chat._sessionName }) });
+    figure.remove();
+  },
 };
 
 
@@ -259,7 +294,16 @@ document.body.addEventListener("click", evt => {
 
 // メニュー
 (() => {
+  const
+    menuClearAllLocalStorage = byId("clear_all_local_storage"),
+    menuSetGeminiApiKey = byId("set_gemini_api_key"),
+    menuSetCloudinaryApiKey = byId("set_cloudinary_api_key"),
+    menuSetStorageUrl = byId("set_storage_url"),
+    menuCheckLocalStorage = byId("check_local_stotage"),
+    menuOverwriteMessages = byId("overwrite_messages"),
+    menuDeleteMessages = byId("delete_messages");
   const addListener = /** @param {HTMLElement} elm */(elm, handler) => { elm.addEventListener("click", handler); };
+
   addListener(menuClearAllLocalStorage, () => { if (confirm("Are you sure?")) localStorage.clear(); });
   addListener(menuSetGeminiApiKey, () => {
     const key = prompt("Input Gemini API key.");
@@ -273,6 +317,13 @@ document.body.addEventListener("click", evt => {
     const apiSecret = prompt("Input Cloudinary API secret.");
     if (!apiSecret) return;
     cloudinary.init(cloudName, apiKey, apiSecret);
+  });
+  addListener(menuSetStorageUrl, () => {
+    const url = prompt("Input url.")
+    if (url) {
+      localStorage.setItem(STORAGE_URL, url);
+      chat.storageUrl = url;
+    }
   });
   addListener(menuCheckLocalStorage, () => {
     alert(Object.entries(localStorage).map(([key, value], idx) => {
@@ -297,22 +348,55 @@ document.body.addEventListener("click", evt => {
 //------------------------------
 // 初期表示
 //------------------------------
-((/** @type {K_GeneralAiChatMessage[]} */messages) => {
-  if (!messages) return;
-  messages.forEach(m => {
-    if (m.user && typeof m.user === "string") chat.appendUserMessage(m.user);
-    if (m.user?.url) chat.appendUserImage(m.user.url);
-    if (m.assistant) chat.appendModelMessage(m.assistant);
-  });
-})(JSON.parse(localStorage.getItem(STORAGE_MESSAGES)));
-
 (async () => {
-  console.time(0);
-  const res = await fetch("https://script.google.com/macros/s/AKfycbz2282hQH5BAA6ZBhgLxzriYEjsRgp8MydQzf9NPBjLIKoTzBC-16wLpWGmzmvqnxWe/exec", {
-    method: "post",
-    body: JSON.stringify({ action: "update", sessionId: "test" + Math.random(), sectionName: "foo", newMessages: chat.getMessagesFromChatSection() })
-  });
-  const output = await res.json();
-  console.log(output);
-  console.timeEnd(0);
+  const elmWrapper = byId("session-list-wrapper"), /** @type {HTMLTemplateElement} */ templateSession = byId("template-session");
+
+  // クリックイベントを設定
+  elmWrapper.addEventListener("click", async evt => {
+    const /** @type {HTMLButtonElement} */ target = evt.target;
+    if (target.tagName !== "BUTTON") return;
+    const li = target.closest("[data-session-id]"), sessionId = li.dataset.sessionId, timestamp = Date.now();
+    if (target.classList.contains("session-name")) {
+      elmWrapper.hidden = true;
+      if (sessionId === "_new") chat.init(`session_${timestamp}`, "no title");
+      else {
+        const session = list.find(s => s.id === sessionId);
+        sectionChat.dataset.loading = "true";
+        const messages = sessionId === latest.id ? latest.messages
+          : await (await fetch(`${chat.storageUrl}?${new URLSearchParams({ action: "get_messages", sessionId })}`)).json();
+        chat.init(sessionId, session.name, messages);
+        sectionChat.dataset.loading = "false";
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+      }
+    }
+    else if (target.classList.contains("session-rename")) {
+      const session = list.find(s => s.id === sessionId);
+      const newSessionName = prompt("新しい名前を決めてください。", session.name);
+      if (newSessionName && newSessionName !== session.name) {
+        await fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId, timestamp, newSessionName }) });
+        li.querySelector(".session-name").innerText = newSessionName;
+        session.name = newSessionName;
+      }
+    }
+    else if (target.classList.contains("session-delete")) {
+      const originalName = list.find(s => s.id === sessionId).name;
+      if (confirm(`Are you sure to delete "${originalName}"?`)) {
+        li.remove();
+        fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "delete", sessionId }) });
+      }
+    }
+  })
+
+  elmWrapper.dataset.loading = "true";
+  const /** @type {SessionList} */ { list, latest } = await (await fetch(`${chat.storageUrl}?${new URLSearchParams({ action: "list" })}`)).json();
+  elmWrapper.dataset.loading = "false";
+
+  for (const session of list) {
+    const clone = templateSession.content.cloneNode(true), /** @type {HTMLLIElement} */ li = clone.querySelector("li"), /** @type {HTMLButtonElement} */ buttonName = clone.querySelector(".session-name"), spanTimestamp = clone.querySelector(".timestamp");
+    li.dataset.sessionId = session.id;
+    buttonName.innerText = session.name;
+    const time = new Date(session.timestamp);
+    spanTimestamp.innerText = `${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${String(time.getMinutes()).padStart(2, "0")}`;
+    templateSession.parentElement.append(clone);
+  }
 })();

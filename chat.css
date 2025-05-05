@@ -1,9 +1,17 @@
+:root {
+  --loading-bg: url('https://res.cloudinary.com/dof2yrkux/image/upload/v1746281183/icon/loading.gif') center/contain no-repeat;
+}
+
 [hidden] {
   display: none !important;
 }
 
+button {
+  cursor: pointer !important;
+}
+
 html {
-  margin: 0 auto 0;
+  margin: 0 auto;
   max-width: 800px;
 }
 
@@ -12,38 +20,100 @@ textarea {
   font-family: "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Meiryo", sans-serif;
 }
 
+#session-list-wrapper {
+  position: fixed;
+  z-index: 1;
+  top: 10%;
+  bottom: 10%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-flow: column wrap;
+  align-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#session-list-wrapper[data-loading="true"]::after {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  width: 32px;
+  height: 32px;
+  background: var(--loading-bg);
+}
+
+#session-list {
+  display: flex;
+  flex-flow: column;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+#session-list ul {
+  margin: 0;
+  padding: 0;
+}
+
+#session-list li {
+  padding: .5rem;
+  border-top: 1px solid #888;
+  list-style-type: none;
+}
+
+#session-list button.session-name {
+  all: unset;
+  padding: .25rem;
+  font-size: 1.5rem;
+  color: #000;
+  font-weight: bold;
+}
+
+#session-list button:is(.session-rename, .session-delete) {
+  all: unset;
+  padding: .25rem;
+  text-decoration: underline;
+}
+
 #chat {
   margin-bottom: 50%;
+}
+
+#chat[data-loading="true"] {
+  content: "";
+  display: block;
+  margin: 0 auto;
+  width: 32px;
+  height: 32px;
+  background: url(https://res.cloudinary.com/dof2yrkux/image/upload/v1746281183/icon/loading.gif) center / contain no-repeat;
 }
 
 .user {
   margin-left: auto;
   width: 80%;
-  padding: .5em;
-  border-radius: .5em;
+  padding: .5rem;
+  border-radius: .5rem;
   background-color: #eee;
   white-space: pre-line;
 }
 
 .model {
-  padding: .5em;
+  padding: .5rem;
 }
 
-.model[data-status="loading"]::after {
+.model[data-loading="true"]::after {
   content: "";
   display: inline-block;
   vertical-align: middle;
-  width: 16px;
-  height: 16px;
-  background-image: url('https://res.cloudinary.com/dof2yrkux/image/upload/v1746281183/icon/loading.gif');
-  background-size: contain;
-  background-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  background: var(--loading-bg);
 }
 
 .user-image {
   display: flex;
   flex-wrap: wrap;
-  margin: .5em 0;
+  margin: .5rem 0;
   gap: 5px;
 }
 
@@ -51,60 +121,56 @@ textarea {
   justify-content: end;
 }
 
-figure {
+:is(#chat, #input) figure {
   position: relative;
   margin: 0;
   border: 1px solid #aaa;
-  padding: .5em;
+  padding: .5rem;
 }
 
-figure[data-uploading="true"] {
+:is(#chat, #input) figure[data-uploading="true"] {
   opacity: .5;
 }
 
-figure[data-uploading="true"]::after {
+:is(#chat, #input) figure[data-uploading="true"]::after {
   content: "";
   position: absolute;
   top: calc(50% - 20px);
   left: calc(50% - 20px);
   width: 40px;
   height: 40px;
-  background-image: url('https://res.cloudinary.com/dof2yrkux/image/upload/v1746281183/icon/loading.gif');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-blend-mode: darken;
+  background: var(--loading-bg);
 }
 
-figure img {
+:is(#chat, #input) figure img {
   width: 100px;
   height: 100px;
   object-fit: cover;
 }
 
-figure .button-delete-image {
+:is(#chat, #input) figure .button-delete-image {
   position: absolute;
-  top: -.5em;
-  right: -.5em;
-  width: 2em;
-  height: 2em;
-  border-radius: 1em;
+  top: -.5rem;
+  right: -.5rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 1rem;
   border: 1px solid #aaa;
   background-color: #fff;
-  cursor: pointer;
 }
 
 #generate-from-middle {
   display: block;
-  margin: .5em auto 1em;
+  margin: .5rem auto 1rem;
   border: none;
   background-color: #008;
   color: #fff;
-  width: 2em;
-  height: 2em;
-  padding: .25em;
-  border-radius: 1em;
+  width: 2rem;
+  height: 2rem;
+  padding: .25rem;
+  border-radius: 1rem;
   font-weight: bold;
-  font-size: 1em;
+  font-size: 1rem;
 }
 
 #input {
@@ -123,27 +189,27 @@ figure .button-delete-image {
   margin: 0;
   outline: none;
   border: none;
-  padding: .5em;
+  padding: .5rem;
   width: 100%;
-  max-height: 7em;
-  font-size: 1em;
+  max-height: 7rem;
+  font-size: 1rem;
   resize: none;
   background-color: transparent;
 }
 
 #generate {
   position: absolute;
-  bottom: .5em;
-  right: .5em;
+  bottom: .5rem;
+  right: .5rem;
   border: none;
   background-color: #000;
   color: #fff;
-  width: 2em;
-  height: 2em;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
-  border-radius: 1em;
+  border-radius: 1rem;
   font-weight: bold;
-  font-size: 1.5em;
+  font-size: 1rem;
 }
 
 #generate:active {
@@ -163,21 +229,22 @@ figure .button-delete-image {
   white-space: pre;
   overflow-y: scroll;
   border: 1px solid #faa;
-  padding: .5em;
+  padding: .25rem;
   background-color: #fee;
-  font-size: .5em;
+  font-size: .5rem;
 }
 
 #menu {
   position: fixed;
-  top: .5em;
-  left: .5em;
+  z-index: 2;
+  top: .5rem;
+  left: .5rem;
   user-select: none;
 }
 
 #menu details {
   border: 1px solid #ccc;
-  border-radius: .5em;
+  border-radius: .5rem;
   background-color: #fff;
   cursor: pointer;
 }
@@ -187,7 +254,7 @@ figure .button-delete-image {
 }
 
 #menu summary {
-  padding: .5em;
+  padding: .5rem;
   list-style: none;
 }
 
@@ -197,7 +264,7 @@ figure .button-delete-image {
 
 #menu ul {
   margin: 0;
-  padding: .5em;
+  padding: .5rem;
 }
 
 #menu li {
@@ -206,9 +273,26 @@ figure .button-delete-image {
 
 #menu button {
   all: unset;
-  padding: .5em;
+  padding: .5rem;
 }
 
 #menu button:active {
   background-color: #ddd;
+}
+
+#updating {
+  position: fixed;
+  top: 0;
+  right: 0;
+}
+
+#updating figure {
+  margin: 0;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  font-weight: bold;
+  background-color: #ccc;
+  color: #fff;
 }

@@ -16,14 +16,28 @@
 
 <body>
 
-  <section id="chat">
+  <section id="session-list-wrapper" data-loading="false">
+    <div id="session-list">
+      <h2>Session list</h2>
+      <ul>
+        <li data-session-id="_new"><button class="session-name">New Session</button></li>
+        <template id="template-session">
+          <li data-session-id=""><button class="session-name">test</button><br><span class="timestamp">5/5 12:00</span>
+            <button class="session-rename">名前変更</button> <button class="session-delete">削除</button>
+          </li>
+        </template>
+      </ul>
+    </div>
+  </section>
+
+  <section id="chat" data-loading="false">
 
     <template id="template-user">
       <article class="user" data-role="user" contenteditable="true"></article>
     </template>
 
     <template id="template-model">
-      <article class="model" data-role="model" data-markdown="" contenteditable="true"></article>
+      <article class="model" data-role="model" data-markdown="" contenteditable="true" data-loading="false"></article>
     </template>
 
     <template id="template-user-image">
@@ -48,18 +62,23 @@
 
   <aside id="menu">
     <details>
-      <summary>☰ v0.11</summary>
+      <summary>☰ v0.20</summary>
       <nav>
         <ul>
           <li><button id="clear_all_local_storage" ontouchstart="">clear all localStorage</button>
           <li><button id="set_gemini_api_key" ontouchstart="">set Gemini API key</button>
           <li><button id="set_cloudinary_api_key" ontouchstart="">set Cloudinary API key</button>
+          <li><button id="set_storage_url" ontouchstart="">set storage URL</button>
           <li><button id="check_local_stotage" ontouchstart="">check localStorage</button>
-          <li><button id="overwrite_messages" ontouchstart="">overwrite messages</button>
-          <li><button id="delete_messages" ontouchstart="">delete messages</button>
+          <li><button id="overwrite_messages" ontouchstart="" hidden>overwrite messages</button>
+          <li><button id="delete_messages" ontouchstart="" hidden>delete messages</button>
         </ul>
       </nav>
     </details>
+  </aside>
+
+  <aside id="updating">
+    <template id="template-updating"><figure>↑</figure></template>
   </aside>
 
   <script>
