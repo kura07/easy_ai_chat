@@ -438,18 +438,22 @@ const session = {
 // iPhoneの仮想キーボード対策
 //------------------------------
 // if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
-sectionInput.style.position = "absolute";
-requestAnimationFrame(function setInputPos() {
-  const keyboardHeight = window.innerHeight - visualViewport.height;
-  sectionInput.style.bottom = `-${scrollY - keyboardHeight}px`;
-  byId("a").textContent=JSON.stringify({innerHeight,visualViewportHeight:visualViewport.height,scrollY})
-  requestAnimationFrame(setInputPos);
-});
+//   sectionInput.style.position = "absolute";
+//   requestAnimationFrame(function setInputPos() {
+//     const keyboardHeight = window.innerHeight - visualViewport.height;
+//     sectionInput.style.bottom = `-${scrollY - keyboardHeight}px`;
+//     byId("a").textContent = JSON.stringify({ innerHeight, visualViewportHeight: visualViewport.height, scrollY })
+//     requestAnimationFrame(setInputPos);
+//   });
 // }
-document.addEventListener("focusin", evt => {
-  if (sectionChat.contains(evt.target)) sectionInput.hidden = true;
-});
-document.addEventListener("focusout", evt => { sectionInput.hidden = false; });
+// visualViewport.addEventListener("resize", () => {
+//   if (innerHeight === visualViewport.height)
+//   if (innerHeight === visualViewport.height)
+// });
+// document.addEventListener("focusin", evt => {
+//   if (sectionChat.contains(evt.target)) sectionInput.hidden = true;
+// });
+// document.addEventListener("focusout", evt => { sectionInput.hidden = false; });
 
 
 
