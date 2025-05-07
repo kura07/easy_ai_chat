@@ -437,26 +437,43 @@ const session = {
 //------------------------------
 // iPhoneの仮想キーボード対策
 //------------------------------
+const inputAdjuster = {
+  _frameId: null,
+
+  init() {
+    document.addEventListener("focusin", evt => {
+      if (sectionChat.contains(evt.target)) sectionInput.hidden = true;
+    });
+    document.addEventListener("focusout", evt => { sectionInput.hidden = false; });
+    requestAnimationFrame(function a() {
+      inputUser.value = JSON.stringify({ innerHeight, vheight: visualViewport.height });
+      requestAnimationFrame(a);
+    });
+  },
+
+  startAdjust() {
+    if (this._frameId !== null) return;
+    sectionInput.classList.add("for-iphone");
+    const setInputPos = () => {
+      const visualHeight = visualViewport.height;
+      const inputHeight = sectionInput.getBoundingClientRect().height;
+      // const keyboardHeight = window.innerHeight - visualViewport.height;
+      sectionInput.style.top = `${scrollY + visualHeight - inputHeight}px`;
+      this._frameId = requestAnimationFrame(setInputPos);
+    };
+    setInputPos();
+  },
+
+  stopAdjust() {
+    if (this._frameId === null) return;
+    sectionInput.classList.remove("for-iphone");
+    cancelAnimationFrame(this._frameId);
+    this._frameId = null;
+  },
+};
 if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
-  sectionInput.classList.add("for-iphone");
-  requestAnimationFrame(function setInputPos() {
-    const visualHeight = visualViewport.height;
-    const inputHeight = sectionInput.getBoundingClientRect().height;
-    const keyboardHeight = 275;//window.innerHeight - visualViewport.height;
-    sectionInput.style.top = `${scrollY + visualHeight - inputHeight}px`;
-    requestAnimationFrame(setInputPos);
-  });
+  inputAdjuster.init();
 }
-visualViewport.addEventListener("resize", () => {
-  // if (innerHeight === visualViewport.height)
-  // if (innerHeight === visualViewport.height)
-});
-document.addEventListener("focusin", evt => {
-  if (sectionChat.contains(evt.target)) sectionInput.hidden = true;
-});
-document.addEventListener("focusout", evt => { sectionInput.hidden = false; });
-
-
 
 session.showList();
 // session.select("_new")
