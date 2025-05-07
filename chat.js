@@ -192,19 +192,21 @@ const chat = {
 //------------------------------
 const autoscroll = {
   _button: byId("autoscroll"),
-  _enabled: false,
+  _isEnabled: false,
   _scrollStep() { window.scrollBy(0, 1); },
   _interval: 1000 / 30,
   _intervalId: null,
 
   start() {
-    if (this._enabled) return;
-    this._enabled = this._button.hidden = true;
+    if (this._isEnabled) return;
+    this._isEnabled = true;
+    this._button.hidden = true;
     this._intervalId = setInterval(this._scrollStep, this._interval);
   },
   stop() {
-    if (!this._enabled) return;
-    this._enabled = this._button.hidden = false;
+    if (!this._isEnabled) return;
+    this._isEnabled = false;
+    this._button.hidden = false;
     clearInterval(this._intervalId);
   },
 };
@@ -439,15 +441,16 @@ const session = {
 //------------------------------
 const inputAdjuster = {
   _frameId: null,
+  _isEnabled: false,
 
   init() {
-    document.addEventListener("focusin", evt => {
-      if (sectionChat.contains(evt.target)) sectionInput.hidden = true;
-    });
-    document.addEventListener("focusout", evt => { sectionInput.hidden = false; });
-    requestAnimationFrame(function a() {
-      inputUser.value = JSON.stringify({ innerHeight, vheight: visualViewport.height });
-      requestAnimationFrame(a);
+    visualViewport.addEventListener("resize", evt => {
+      const newIsEnabled = visualViewport.height < 400;
+      if (this._isEnabled === newIsEnabled) return;
+      sectionInput.hidden = sectionChat.contains(document.activeElement);
+      this._isEnabled = newIsEnabled;
+      if (newIsEnabled) this.startAdjust();
+      else this.stopAdjust();
     });
   },
 
@@ -471,9 +474,7 @@ const inputAdjuster = {
     this._frameId = null;
   },
 };
-if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
-  inputAdjuster.init();
-}
+if (navigator.userAgent.match(/iPhone|iPad|iPod/)) inputAdjuster.init();
 
 session.showList();
 // session.select("_new")
