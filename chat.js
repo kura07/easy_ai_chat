@@ -220,7 +220,7 @@ const error = {
     this._elm.hidden = true;
   }
 };
-
+error.init();
 
 //------------------------------
 // オートスクロール
