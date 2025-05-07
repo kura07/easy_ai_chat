@@ -445,11 +445,11 @@ const inputAdjuster = {
 
   init() {
     visualViewport.addEventListener("resize", evt => {
-      const newIsEnabled = visualViewport.height < 400;
-      if (this._isEnabled === newIsEnabled) return;
-      sectionInput.hidden = sectionChat.contains(document.activeElement);
-      this._isEnabled = newIsEnabled;
-      if (newIsEnabled) this.startAdjust();
+      const isKeyboardOpen = visualViewport.height < 400;
+      sectionInput.hidden = isKeyboardOpen && sectionChat.contains(document.activeElement);
+      if (this._isEnabled === isKeyboardOpen) return;
+      this._isEnabled = isKeyboardOpen;
+      if (isKeyboardOpen) this.startAdjust();
       else this.stopAdjust();
     });
   },
