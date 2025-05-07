@@ -216,7 +216,6 @@ textarea {
   position: absolute;
   bottom: 3rem;
   right: .5rem;
-  border: none;
   background-color: #fff;
   width: 2rem;
   height: 2rem;
@@ -248,6 +247,20 @@ textarea {
 
 #generate:disabled {
   background-color: #aaa;
+}
+
+#cut-tail {
+  position: absolute;
+  bottom: .5rem;
+  right: .5rem;
+  background-color: #fff;
+  width: 2rem;
+  height: 2rem;
+  border-radius: .5rem;
+  border: 1px solid #080;
+  padding: 0;
+  color: #080;
+  font-size: .75rem;
 }
 
 #error-message {

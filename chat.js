@@ -17,6 +17,7 @@
 
 const STORAGE_MESSAGES = (session => session ? `messages-${session}` : "messages")(new URLSearchParams(location.search).get("session"));
 const STORAGE_URL = "storage_url";
+const IS_IPHONE = navigator.userAgent.match(/iPhone/);
 
 //------------------------------
 // 要素取得
@@ -33,8 +34,7 @@ const
   sectionInput = /** @type {HTMLTextAreaElement} */(byId("input")),
   inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
   inputModel =  /** @type {HTMLTextAreaElement} */(byId("input-model")),
-  buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate")),
-  asideErrorMessage = /** @type {HTMLElement} */(byId("error-message"));
+  buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate"));
 
 //------------------------------
 // チャット処理関数たち
@@ -58,6 +58,24 @@ const chat = {
       if (m.user && typeof m.user === "string") this.appendUserMessage(m.user);
       if (m.user?.url) this.appendUserImage(m.user.url);
       if (m.assistant) this.appendModelMessage(m.assistant);
+    });
+
+    // focusout
+    if (!IS_IPHONE) sectionChat.addEventListener("focusout", evt => {
+      const /** @type {HTMLElement} */ target = evt.target;
+      if (target.tagName === "ARTICLE" && target.dataset.changed === "true") {
+        delete target.dataset.changed;
+        if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
+        chat.saveChatMessages();
+      }
+    });
+    else window.addEventListener("k-keyboardclose", () => {
+      const targets = [...sectionChat.querySelectorAll("article")].filter(a => a.dataset.changed === "true");
+      targets.forEach(target => {
+        delete target.dataset.changed;
+        if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
+      });
+      if (targets.length > 0) chat.saveChatMessages();
     });
   },
 
@@ -100,8 +118,7 @@ const chat = {
     delete articleModelMessage.dataset.loading;
     if (res.error) {
       tryTimes++;
-      asideErrorMessage.hidden = false;
-      asideErrorMessage.innerText = `[${tryTimes}] ${new Date().toLocaleTimeString()}\n${JSON.stringify(res.originalResponse, null, 2)}`;
+      error.show(`[${tryTimes}] ${new Date().toLocaleTimeString()}\n${JSON.stringify(res.originalResponse, null, 2)}`);
       if (tryTimes < 3) return await this.fetchMessage(articleModelMessage, inputTextModel, tryTimes);
       else alert("3度トライしましたがすべて失敗しました。");
     }
@@ -180,11 +197,29 @@ const chat = {
   async saveChatMessages() {
     const clone = templateIconUpdaing.content.cloneNode(true), figure = clone.querySelector("figure");
     templateIconUpdaing.parentElement.append(clone);
-    await fetch(this.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId: this._sessionId, timestamp: Date.now(), newMessages: this.getMessagesFromChatSection(), newSessionName: this._sessionName }) });
+    const httpRes = await fetch(this.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId: this._sessionId, timestamp: Date.now(), newMessages: this.getMessagesFromChatSection(), newSessionName: this._sessionName }) });
+    if (!httpRes.ok) error.show(await httpRes.text());
     figure.remove();
   },
 };
 
+
+//------------------------------
+// エラーメッセージ
+//------------------------------
+const error = {
+  _elm: /** @type {HTMLElement} */ (byId("error-message")),
+  init() {
+    this._elm.addEventListener("click", () => { this.hide(); });
+  },
+  show(message) {
+    asideErrorMessage.hidden = false;
+    asideErrorMessage.innerText = message;
+  },
+  hide() {
+    this._elm.hidden = true;
+  }
+};
 
 
 //------------------------------
@@ -241,15 +276,6 @@ document.addEventListener("focusin", evt => {
     target.insertAdjacentElement("afterend", buttonGenerateFromMiddle);
   }
 });
-// focusout
-document.addEventListener("focusout", evt => {
-  const /** @type {HTMLElement} */ target = evt.target;
-  if (target.tagName === "ARTICLE" && sectionChat.contains(target) && target.dataset.changed === "true") {
-    delete target.dataset.changed;
-    if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
-    chat.saveChatMessages();
-  }
-});
 
 // チャット
 buttonGenerate.addEventListener("click", () => { chat.addNewMessage(); });
@@ -270,7 +296,6 @@ document.addEventListener("keydown", evt => {
   }
 });
 buttonGenerateFromMiddle.addEventListener("click", () => { chat.regenerageMessage(); });
-asideErrorMessage.addEventListener("click", () => { asideErrorMessage.hidden = true; });
 
 // 画像・ペースト
 document.addEventListener("paste", async evt => {
@@ -449,9 +474,11 @@ const inputAdjuster = {
       sectionInput.hidden = isKeyboardOpen && sectionChat.contains(document.activeElement);
       if (this._isEnabled === isKeyboardOpen) return;
       this._isEnabled = isKeyboardOpen;
-      if (isKeyboardOpen) this.startAdjust();
-      else this.stopAdjust();
+      if (isKeyboardOpen) window.dispatchEvent(new Event("k-keyboardopen"));
+      else window.dispatchEvent(new Event("k-keyboardclose"));
     });
+    window.addEventListener("k-keyboardopen", () => { this.startAdjust(); });
+    window.addEventListener("k-keyboardclose", () => { this.stopAdjust(); });
   },
 
   startAdjust() {
@@ -474,7 +501,7 @@ const inputAdjuster = {
     this._frameId = null;
   },
 };
-if (true||navigator.userAgent.match(/iPhone|iPad|iPod/)) inputAdjuster.init();
+if (IS_IPHONE) inputAdjuster.init();
 
 session.showList();
 // session.select("_new")
