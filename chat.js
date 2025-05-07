@@ -442,13 +442,14 @@ sectionInput.style.position = "absolute";
 requestAnimationFrame(function setInputPos() {
   const keyboardHeight = window.innerHeight - visualViewport.height;
   sectionInput.style.bottom = `-${scrollY - keyboardHeight}px`;
+  byId("a").textContent=JSON.stringify({innerHeight,visualViewportHeight:visualViewport.height,scrollY})
   requestAnimationFrame(setInputPos);
 });
 // }
 document.addEventListener("focusin", evt => {
   if (sectionChat.contains(evt.target)) sectionInput.hidden = true;
 });
-document.addEventListener("focusout", evt => { sectionInput.hidden = false; })
+document.addEventListener("focusout", evt => { sectionInput.hidden = false; });
 
 
 
