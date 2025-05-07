@@ -434,5 +434,17 @@ const session = {
   },
 };
 
+function registerPushupEvent() {
+  if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) return;
+
+  visualViewport.addEventListener("resize", ({ target }) => {
+    const keyboardHeight = window.innerHeight - target.height;
+    const bottomValue = keyboardHeight === 0 ? "" : `${keyboardHeight}px`;
+    sectionInput.style.bottom = bottomValue;
+  });
+}
+
+registerPushupEvent();
+
 session.showList();
 // session.select("_new")
