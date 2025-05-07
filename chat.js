@@ -437,14 +437,15 @@ const session = {
 //------------------------------
 // iPhoneの仮想キーボード対策
 //------------------------------
-if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
-  alert("scroll keyboard")
-  sectionInput.style.position = "absolute";
-  requestAnimationFrame(function setInputPos() {
-    sectionInput.style.bottom = `-${Math.ceil(scrollY)}px`;
-    requestAnimationFrame(setInputPos);
-  });
-}
+// if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
+alert("scroll keyboard")
+sectionInput.style.position = "absolute";
+requestAnimationFrame(function setInputPos() {
+  const keyboardHeight = window.innerHeight - visualViewport.height;
+  sectionInput.style.bottom = `-${Math.ceil(scrollY - keyboardHeight)}px`;
+  requestAnimationFrame(setInputPos);
+});
+// }
 
 
 
