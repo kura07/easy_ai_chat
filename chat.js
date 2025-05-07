@@ -474,7 +474,7 @@ const inputAdjuster = {
     this._frameId = null;
   },
 };
-if (navigator.userAgent.match(/iPhone|iPad|iPod/)) inputAdjuster.init();
+if (true||navigator.userAgent.match(/iPhone|iPad|iPod/)) inputAdjuster.init();
 
 session.showList();
 // session.select("_new")
