@@ -30,6 +30,7 @@ const
   buttonGenerateFromMiddle = /** @type {HTMLButtonElement} */(byId("generate-from-middle")),
   templateIconUpdaing = /** @type {HTMLTemplateElement} */(byId("template-updating"));
 const
+  sectionInput = /** @type {HTMLTextAreaElement} */(byId("input")),
   inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
   inputModel =  /** @type {HTMLTextAreaElement} */(byId("input-model")),
   buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate")),
@@ -51,12 +52,12 @@ const chat = {
    * @param {K_GeneralAiChatMessage[]} messages 
    */
   init(sessionId, sessionName, messages = []) {
-    chat._sessionId = sessionId;
-    chat._sessionName = sessionName;
+    this._sessionId = sessionId;
+    this._sessionName = sessionName;
     messages.forEach(m => {
-      if (m.user && typeof m.user === "string") chat.appendUserMessage(m.user);
-      if (m.user?.url) chat.appendUserImage(m.user.url);
-      if (m.assistant) chat.appendModelMessage(m.assistant);
+      if (m.user && typeof m.user === "string") this.appendUserMessage(m.user);
+      if (m.user?.url) this.appendUserImage(m.user.url);
+      if (m.assistant) this.appendModelMessage(m.assistant);
     });
   },
 
@@ -67,12 +68,12 @@ const chat = {
     const inputTextUser = inputUser.value, inputTextModel = inputModel.value;
     inputUser.value = inputModel.value = "";
     buttonGenerateFromMiddle.hidden = true;
-    chat.appendUserMessage(inputTextUser);
-    const articleModelMessage = chat.appendModelMessage(inputTextModel);
-    chat.saveChatMessages();
+    this.appendUserMessage(inputTextUser);
+    const articleModelMessage = this.appendModelMessage(inputTextModel);
+    this.saveChatMessages();
     arrangeInputForm();
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
-    await chat.fetchMessage(articleModelMessage, inputTextModel);
+    await this.fetchMessage(articleModelMessage, inputTextModel);
   },
 
   /**
@@ -81,9 +82,9 @@ const chat = {
   async regenerageMessage() {
     while (buttonGenerateFromMiddle.nextElementSibling) buttonGenerateFromMiddle.nextElementSibling.remove();
     buttonGenerateFromMiddle.hidden = true;
-    const articleModelMessage = sectionChat.lastElementChild.dataset.role === "model" ? sectionChat.lastElementChild : chat.appendModelMessage("");
+    const articleModelMessage = sectionChat.lastElementChild.dataset.role === "model" ? sectionChat.lastElementChild : this.appendModelMessage("");
     const inputTextModel = articleModelMessage.dataset.markdown;
-    await chat.fetchMessage(articleModelMessage, inputTextModel);
+    await this.fetchMessage(articleModelMessage, inputTextModel);
   },
 
   /**
@@ -95,20 +96,20 @@ const chat = {
   async fetchMessage(articleModelMessage, inputTextModel = "", tryTimes = 0) {
     sectionChat.querySelectorAll("article").forEach(a => { if (a !== articleModelMessage && a.innerText.trim() === "") a.remove(); });
     articleModelMessage.dataset.loading = "true";
-    const res = await gemini.createMessage(chat.getMessagesFromChatSection());
+    const res = await gemini.createMessage(this.getMessagesFromChatSection());
     delete articleModelMessage.dataset.loading;
     if (res.error) {
       tryTimes++;
       asideErrorMessage.hidden = false;
       asideErrorMessage.innerText = `[${tryTimes}] ${new Date().toLocaleTimeString()}\n${JSON.stringify(res.originalResponse, null, 2)}`;
-      if (tryTimes < 3) return await chat.fetchMessage(articleModelMessage, inputTextModel, tryTimes);
+      if (tryTimes < 3) return await this.fetchMessage(articleModelMessage, inputTextModel, tryTimes);
       else alert("3度トライしましたがすべて失敗しました。");
     }
     else {
-      chat.updateModelMessage(articleModelMessage, inputTextModel + res.text);
+      this.updateModelMessage(articleModelMessage, inputTextModel + res.text);
       articleModelMessage.scrollIntoView({ behavior: "smooth", block: "start" });
-      setTimeout(() => { autoScroll = true; }, 1000);
-      chat.saveChatMessages();
+      setTimeout(() => { autoscroll.start(); }, 1000);
+      this.saveChatMessages();
     }
   },
 
@@ -158,7 +159,7 @@ const chat = {
    */
   appendModelMessage(markdownText) {
     const /** @type {HTMLElement} */ clone = templateModel.content.cloneNode(true), article = clone.querySelector("article");
-    chat.updateModelMessage(article, markdownText);
+    this.updateModelMessage(article, markdownText);
     sectionChat.append(clone);
     return article;
   },
@@ -179,7 +180,7 @@ const chat = {
   async saveChatMessages() {
     const clone = templateIconUpdaing.content.cloneNode(true), figure = clone.querySelector("figure");
     templateIconUpdaing.parentElement.append(clone);
-    await fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId: chat._sessionId, timestamp: Date.now(), newMessages: chat.getMessagesFromChatSection(), newSessionName: chat._sessionName }) });
+    await fetch(this.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId: this._sessionId, timestamp: Date.now(), newMessages: this.getMessagesFromChatSection(), newSessionName: this._sessionName }) });
     figure.remove();
   },
 };
@@ -189,17 +190,29 @@ const chat = {
 //------------------------------
 // オートスクロール
 //------------------------------
-let autoScroll = false;
-const smoothAutoScroll = () => {
-  if (autoScroll) window.scrollBy(0, 1);
-  setTimeout(smoothAutoScroll, 1000 / 30);
-};
-const stopAutoScroll = () => { autoScroll = false; };
-window.addEventListener('wheel', stopAutoScroll);
-window.addEventListener('touchstart', stopAutoScroll);
-window.addEventListener('keydown', stopAutoScroll);
-smoothAutoScroll();
+const autoscroll = {
+  _button: byId("autoscroll"),
+  _enabled: false,
+  _scrollStep() { window.scrollBy(0, 1); },
+  _interval: 1000 / 30,
+  _intervalId: null,
 
+  start() {
+    if (this._enabled) return;
+    this._enabled = this._button.hidden = true;
+    this._intervalId = setInterval(this._scrollStep, this._interval);
+  },
+  stop() {
+    if (!this._enabled) return;
+    this._enabled = this._button.hidden = false;
+    clearInterval(this._intervalId);
+  },
+};
+window.addEventListener("wheel", () => { autoscroll.stop(); });
+window.addEventListener("touchstart", () => { autoscroll.stop(); });
+window.addEventListener("keydown", () => { autoscroll.stop(); });
+window.addEventListener("mousedown", () => { autoscroll.stop(); });
+autoscroll._button.addEventListener("click", () => { autoscroll.start(); });
 
 //------------------------------
 // イベントリスナ定義
@@ -237,7 +250,7 @@ document.addEventListener("focusout", evt => {
 });
 
 // チャット
-buttonGenerate.addEventListener("click", chat.addNewMessage);
+buttonGenerate.addEventListener("click", () => { chat.addNewMessage(); });
 document.addEventListener("keydown", evt => {
   const /** @type {HTMLElement} */ target = evt.target;
   if (target === inputUser || target === inputModel) {
@@ -254,7 +267,7 @@ document.addEventListener("keydown", evt => {
     }
   }
 });
-buttonGenerateFromMiddle.addEventListener("click", evt => { chat.regenerageMessage(); });
+buttonGenerateFromMiddle.addEventListener("click", () => { chat.regenerageMessage(); });
 asideErrorMessage.addEventListener("click", () => { asideErrorMessage.hidden = true; });
 
 // 画像・ペースト
@@ -346,57 +359,80 @@ document.body.addEventListener("click", evt => {
 })();
 
 //------------------------------
-// 初期表示
+// セッションリスト表示
 //------------------------------
-(async () => {
-  const elmWrapper = byId("session-list-wrapper"), /** @type {HTMLTemplateElement} */ templateSession = byId("template-session");
+const session = {
+  _elmWrapper: byId("session-list-wrapper"),
+  /** @type {Session[]} */ _list: null,
+  /** @type {Session} */_latest: null,
 
-  // クリックイベントを設定
-  elmWrapper.addEventListener("click", async evt => {
-    const /** @type {HTMLButtonElement} */ target = evt.target;
-    if (target.tagName !== "BUTTON") return;
-    const li = target.closest("[data-session-id]"), sessionId = li.dataset.sessionId, timestamp = Date.now();
-    if (target.classList.contains("session-name")) {
-      elmWrapper.hidden = true;
-      if (sessionId === "_new") chat.init(`session_${timestamp}`, "no title");
-      else {
-        const session = list.find(s => s.id === sessionId);
-        sectionChat.dataset.loading = "true";
-        const messages = sessionId === latest.id ? latest.messages
-          : await (await fetch(`${chat.storageUrl}?${new URLSearchParams({ action: "get_messages", sessionId })}`)).json();
-        chat.init(sessionId, session.name, messages);
-        sectionChat.dataset.loading = "false";
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
-      }
-    }
-    else if (target.classList.contains("session-rename")) {
-      const session = list.find(s => s.id === sessionId);
-      const newSessionName = prompt("新しい名前を決めてください。", session.name);
-      if (newSessionName && newSessionName !== session.name) {
-        await fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId, timestamp, newSessionName }) });
-        li.querySelector(".session-name").innerText = newSessionName;
-        session.name = newSessionName;
-      }
-    }
-    else if (target.classList.contains("session-delete")) {
-      const originalName = list.find(s => s.id === sessionId).name;
-      if (confirm(`Are you sure to delete "${originalName}"?`)) {
-        li.remove();
-        fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "delete", sessionId }) });
-      }
-    }
-  })
+  async showList() {
+    const /** @type {HTMLTemplateElement} */ templateSession = byId("template-session");
 
-  elmWrapper.dataset.loading = "true";
-  const /** @type {SessionList} */ { list, latest } = await (await fetch(`${chat.storageUrl}?${new URLSearchParams({ action: "list" })}`)).json();
-  elmWrapper.dataset.loading = "false";
+    // クリックイベントを設定
+    this._elmWrapper.addEventListener("click", async evt => {
+      const /** @type {HTMLButtonElement} */ target = evt.target;
+      if (target.tagName !== "BUTTON") return;
+      const sessionId = /**@type{HTMLLIElement}*/(target.closest("[data-session-id]")).dataset.sessionId;
+      if (target.classList.contains("session-name")) this.select(sessionId);
+      else if (target.classList.contains("session-rename")) this.rename(sessionId);
+      else if (target.classList.contains("session-delete")) this.delete(sessionId);
+    });
 
-  for (const session of list) {
-    const clone = templateSession.content.cloneNode(true), /** @type {HTMLLIElement} */ li = clone.querySelector("li"), /** @type {HTMLButtonElement} */ buttonName = clone.querySelector(".session-name"), spanTimestamp = clone.querySelector(".timestamp");
-    li.dataset.sessionId = session.id;
-    buttonName.innerText = session.name;
-    const time = new Date(session.timestamp);
-    spanTimestamp.innerText = `${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${String(time.getMinutes()).padStart(2, "0")}`;
-    templateSession.parentElement.append(clone);
-  }
-})();
+    this._elmWrapper.dataset.loading = "true";
+    /** @type {SessionList} */ ({ list: this._list, latest: this._latest }
+      = await (await fetch(`${chat.storageUrl}?${new URLSearchParams({ action: "list" })}`)).json());
+    this._elmWrapper.dataset.loading = "false";
+
+    for (const session of this._list) {
+      const clone = templateSession.content.cloneNode(true), /** @type {HTMLLIElement} */ li = clone.querySelector("li"), /** @type {HTMLButtonElement} */ buttonName = clone.querySelector(".session-name"), spanTimestamp = clone.querySelector(".timestamp");
+      li.dataset.sessionId = session.id;
+      buttonName.innerText = session.name;
+      const time = new Date(session.timestamp);
+      spanTimestamp.innerText = `${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${String(time.getMinutes()).padStart(2, "0")}`;
+      templateSession.parentElement.append(clone);
+    }
+  },
+
+  getSessionAndLiElement(sessionId) {
+    const session = this._list.find(s => s.id === sessionId);
+    const li = [...this._elmWrapper.querySelectorAll("li")].find(li => li.dataset.sessionId === sessionId);
+    return { session, li };
+  },
+
+  async select(sessionId) {
+    this._elmWrapper.hidden = true;
+    sectionInput.hidden = false;
+    if (sessionId === "_new") chat.init(`session_${Date.now()}`, "no title");
+    else {
+      const { session } = this.getSessionAndLiElement(sessionId);
+      sectionChat.dataset.loading = "true";
+      const messages = sessionId === this._latest.id ? this._latest.messages
+        : await (await fetch(`${chat.storageUrl}?${new URLSearchParams({ action: "get_messages", sessionId })}`)).json();
+      chat.init(sessionId, session.name, messages);
+      sectionChat.dataset.loading = "false";
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+    }
+  },
+
+  async rename(sessionId) {
+    const { session, li } = this.getSessionAndLiElement(sessionId);
+    const newSessionName = prompt("新しい名前を決めてください。", session.name);
+    if (newSessionName && newSessionName !== session.name) {
+      await fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId, timestamp: Date.now(), newSessionName }) });
+      li.querySelector(".session-name").innerText = newSessionName;
+      session.name = newSessionName;
+    }
+  },
+
+  async delete(sessionId) {
+    const { session, li } = this.getSessionAndLiElement(sessionId);
+    if (confirm(`Are you sure to delete "${session.name}"?`)) {
+      li.remove();
+      fetch(chat.storageUrl, { method: "post", body: JSON.stringify({ action: "delete", sessionId }) });
+    }
+  },
+};
+
+session.showList();
+// session.select("_new")
