@@ -179,14 +179,23 @@ textarea {
 }
 
 #input {
+  border-top: 1px solid #eee;
+  box-sizing: border-box;
+  padding: .25rem .5rem .25rem .25rem;
+  background-color: #fff;
+}
+
+#input:not(.for-iphone) {
   position: fixed;
   left: 0;
   bottom: 0;
-  border-top: 1px solid #eee;
-  box-sizing: border-box;
   width: 100%;
-  padding: .25rem .5rem .25rem .25rem;
-  background-color: #fff;
+}
+
+#input.for-iphone {
+  position: absolute;
+  left: 0;
+  width: 100%;
 }
 
 #input textarea {
