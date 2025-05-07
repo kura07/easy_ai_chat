@@ -213,8 +213,8 @@ const error = {
     this._elm.addEventListener("click", () => { this.hide(); });
   },
   show(message) {
-    asideErrorMessage.hidden = false;
-    asideErrorMessage.innerText = message;
+    this._elm.hidden = false;
+    this._elm.innerText = message;
   },
   hide() {
     this._elm.hidden = true;
