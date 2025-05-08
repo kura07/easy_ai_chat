@@ -68,7 +68,7 @@
 
   <aside id="menu">
     <details>
-      <summary>☰ v0.26a</summary>
+      <summary>☰ v0.3</summary>
       <nav>
         <ul>
           <li><button id="clear_all_local_storage" ontouchstart="">clear all localStorage</button>
@@ -76,10 +76,22 @@
           <li><button id="set_cloudinary_api_key" ontouchstart="">set Cloudinary API key</button>
           <li><button id="set_storage_url" ontouchstart="">set storage URL</button>
           <li><button id="check_local_stotage" ontouchstart="">check localStorage</button>
-          <li><button id="overwrite_messages" ontouchstart="" hidden>overwrite messages</button>
-          <li><button id="delete_messages" ontouchstart="" hidden>delete messages</button>
+          <li hidden><button id="overwrite_messages" ontouchstart="">overwrite messages</button>
+          <li hidden><button id="delete_messages" ontouchstart="">delete messages</button>
         </ul>
       </nav>
+    </details>
+  </aside>
+
+  <aside id="image-list-menu">
+    <details>
+      <summary>Image List</summary>
+      <div id="image-list">
+        <template id="template-image-list-image">
+          <a href="https://nazogaku.com/wp-content/uploads/2025/04/q1165.jpg" target="_blank"><img
+              src="https://nazogaku.com/wp-content/uploads/2025/04/q1165.jpg"></a>
+        </template>
+      </div>
     </details>
   </aside>
 

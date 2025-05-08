@@ -285,6 +285,15 @@ textarea {
   user-select: none;
 }
 
+#image-list-menu {
+  position: fixed;
+  z-index: 2;
+  top: .5rem;
+  right: .5rem;
+  user-select: none;
+  text-align: right;
+}
+
 #menu details {
   border: 1px solid #ccc;
   border-radius: .5rem;
@@ -292,16 +301,39 @@ textarea {
   cursor: pointer;
 }
 
-#menu details:not([open]) {
+#image-list-menu details {
+  border: 1px solid #800;
+  border-radius: .5rem;
+  background-color: #fff;
+  color: #800;
+  cursor: pointer;
+}
+
+#image-list {
+  display: flex;
+  flex-flow: row wrap;
+  margin: .5em;
+  max-width: 80vw;
+  gap: .5em;
+  justify-content: end;
+}
+
+#image-list-menu img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+:is(#menu, #image-list-menu) details:not([open]) {
   opacity: .1;
 }
 
-#menu summary {
+:is(#menu, #image-list-menu) summary {
   padding: .5rem;
   list-style: none;
 }
 
-#menu summary::-webkit-details-marker {
+:is(#menu, #image-list-menu) summary::-webkit-details-marker {
   display: none;
 }
 
