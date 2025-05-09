@@ -114,7 +114,7 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   margin: .5rem 0;
-  gap: 5px;
+  gap: 1em;
 }
 
 .user-image:empty {
@@ -314,14 +314,30 @@ textarea {
   flex-flow: row wrap;
   margin: .5em;
   max-width: 80vw;
-  gap: .5em;
+  gap: 1em;
   justify-content: end;
 }
 
-#image-list-menu img {
+#image-list figure {
+  position: relative;
+  margin: 0;
+}
+
+#image-list img {
   width: 100px;
   height: 100px;
   object-fit: cover;
+}
+
+#image-list button.button-use-image {
+  position: absolute;
+  top: -.5rem;
+  left: -.5rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 1rem;
+  border: 1px solid #aaa;
+  background-color: #fff;
 }
 
 :is(#menu, #image-list-menu) details:not([open]) {

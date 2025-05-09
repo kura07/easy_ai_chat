@@ -35,7 +35,8 @@ const
 	inputUserImage = /** @type {HTMLTextAreaElement} */(byId("input-user-image")),
 	inputUser = /** @type {HTMLTextAreaElement} */(byId("input-user")),
 	inputModel =  /** @type {HTMLTextAreaElement} */(byId("input-model")),
-	buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate"));
+	buttonGenerate = /** @type {HTMLButtonElement} */(byId("generate")),
+	asideEditTool = /** @type {HTMLButtonElement} */(byId("edit-tool"));
 
 //------------------------------
 // チャット処理関数たち
@@ -108,13 +109,10 @@ const chat = {
 			// 画像貼り付け
 			if (image && editableRoot === inputUser || editableRoot.tagName === "ARTICLE" && sectionChat.contains(editableRoot) && editableRoot.dataset.role === "user") {
 
-				const clone = templateUserImage.content.cloneNode(true), /** @type {HTMLElement} */elmFigure = clone.querySelector("figure"), elmAnchor = clone.querySelector("a"), elmImage = clone.querySelector("img");
-				if (editableRoot === inputUser) inputUserImage.append(elmFigure);
-				else if (editableRoot.previousElementSibling?.dataset.role === "user-image") editableRoot.previousElementSibling.append(elmFigure);
-				else editableRoot.insertAdjacentElement("beforebegin", clone.querySelector("article"));
+				// alert([...evt.clipboardData.items].map(item => `${item.kind}:${item.type}`).join("\n"));
 
 				// URL情報もあるならそれを参照する
-				const imageUrl = await (async () => {
+				const url = null && await (async () => {
 					const htmlItem = [...evt.clipboardData.items].filter(item => item.type === "text/html")?.[0];
 					if (!htmlItem) return null;
 					const html = await new Promise(res => htmlItem.getAsString(res));
@@ -122,17 +120,8 @@ const chat = {
 					return url || null;
 				})();
 
-				if (imageUrl) {
-					elmImage.src = elmAnchor.href = imageUrl;
-					delete elmFigure.dataset.uploading;
-				}
-				else {
-					const blob = image.getAsFile();
-					elmImage.src = elmAnchor.href = URL.createObjectURL(blob);
-					const res = await cloudinary.upload(blob, { folder: "easy_ai_chat" });
-					delete elmFigure.dataset.uploading;
-					elmImage.src = elmAnchor.href = res.url;
-				}
+				if (url) this.attachImage(editableRoot, { url });
+				else this.attachImage(editableRoot, { blob: image.getAsFile() });
 				if (sectionChat.contains(editableRoot)) chat.saveChatMessages();
 			}
 			else {
@@ -167,6 +156,29 @@ const chat = {
 			});
 			if (targets.length > 0) chat.saveChatMessages();
 		});
+	},
+
+	/**
+	 * 画像を貼り付ける。
+	 * @param {HTMLElement} target - 通常はinputUserあるいは<article role="user">
+	 * @param {{blob?:Blob, url?:string}} obj
+	 */
+	async attachImage(target, { blob, url }) {
+		const clone = templateUserImage.content.cloneNode(true), /** @type {HTMLElement} */elmFigure = clone.querySelector("figure"), elmAnchor = clone.querySelector("a"), elmImage = clone.querySelector("img");
+		if (target === inputUser) inputUserImage.append(elmFigure);
+		else if (target.previousElementSibling?.dataset.role === "user-image") target.previousElementSibling.append(elmFigure);
+		else target.insertAdjacentElement("beforebegin", clone.querySelector("article"));
+
+		if (url) {
+			elmImage.src = elmAnchor.href = url;
+			delete elmFigure.dataset.uploading;
+		}
+		else if (blob) {
+			elmImage.src = elmAnchor.href = URL.createObjectURL(blob);
+			const res = await cloudinary.upload(blob, { folder: "easy_ai_chat" });
+			delete elmFigure.dataset.uploading;
+			elmImage.src = elmAnchor.href = res.url;
+		}
 	},
 
 	/**
@@ -427,10 +439,16 @@ document.querySelector("#image-list-menu details").addEventListener("toggle", ev
 			const clone = template.content.cloneNode(true);
 			clone.querySelector("a").href = url;
 			clone.querySelector("img").src = url;
+			clone.querySelector(".button-use-image").dataset.imageUrl = url;
 			imageList.append(clone);
 		});
 	}
-})
+});
+byId("image-list").addEventListener("click", evt => {
+	const /** @type {HTMLButtonElement} */ target = evt.target;
+	if (target.classList.contains("button-use-image")) chat.attachImage(inputUser, { url: target.dataset.imageUrl });
+});
+
 
 //------------------------------
 // セッションリスト表示

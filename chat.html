@@ -22,7 +22,7 @@
       <ul>
         <li data-session-id="_new"><button class="session-name">New Session</button></li>
         <template id="template-session">
-          <li data-session-id=""><button class="session-name">test</button><br><span class="timestamp">5/5 12:00</span>
+          <li data-session-id><button class="session-name">test</button><br><span class="timestamp">5/5 12:00</span>
             <button class="session-rename">名前変更</button> <button class="session-delete">削除</button>
           </li>
         </template>
@@ -37,13 +37,13 @@
     </template>
 
     <template id="template-model">
-      <article class="model" data-role="model" data-markdown="" contenteditable="true" data-loading="false"></article>
+      <article class="model" data-role="model" data-markdown contenteditable="true" data-loading="false"></article>
     </template>
 
     <template id="template-user-image">
       <article class="user-image" data-role="user-image">
         <figure data-uploading="true">
-          <a href="" target="_blank"><img src=""></a>
+          <a href target="_blank"><img src></a>
           <button class="button-delete-image">✕</button>
         </figure>
       </article>
@@ -62,22 +62,21 @@
   </section>
 
   <aside id="edit-tool" hidden>
-    <button id="to-plaintext">Aa</button>
     <button id="cut-tail">✂</button>
   </aside>
 
   <aside id="menu">
     <details>
-      <summary>☰ v0.3</summary>
+      <summary>☰ v0.3a</summary>
       <nav>
         <ul>
-          <li><button id="clear_all_local_storage" ontouchstart="">clear all localStorage</button>
-          <li><button id="set_gemini_api_key" ontouchstart="">set Gemini API key</button>
-          <li><button id="set_cloudinary_api_key" ontouchstart="">set Cloudinary API key</button>
-          <li><button id="set_storage_url" ontouchstart="">set storage URL</button>
-          <li><button id="check_local_stotage" ontouchstart="">check localStorage</button>
-          <li hidden><button id="overwrite_messages" ontouchstart="">overwrite messages</button>
-          <li hidden><button id="delete_messages" ontouchstart="">delete messages</button>
+          <li><button id="clear_all_local_storage" ontouchstart>clear all localStorage</button>
+          <li><button id="set_gemini_api_key" ontouchstart>set Gemini API key</button>
+          <li><button id="set_cloudinary_api_key" ontouchstart>set Cloudinary API key</button>
+          <li><button id="set_storage_url" ontouchstart>set storage URL</button>
+          <li><button id="check_local_stotage" ontouchstart>check localStorage</button>
+          <li hidden><button id="overwrite_messages" ontouchstart>overwrite messages</button>
+          <li hidden><button id="delete_messages" ontouchstart>delete messages</button>
         </ul>
       </nav>
     </details>
@@ -88,8 +87,10 @@
       <summary>Image List</summary>
       <div id="image-list">
         <template id="template-image-list-image">
-          <a href="https://nazogaku.com/wp-content/uploads/2025/04/q1165.jpg" target="_blank"><img
-              src="https://nazogaku.com/wp-content/uploads/2025/04/q1165.jpg"></a>
+          <figure>
+            <a href target="_blank"><img src></a>
+            <button class="button-use-image" data-image-url>＋</button>
+          </figure>
         </template>
       </div>
     </details>
