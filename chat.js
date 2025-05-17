@@ -107,7 +107,7 @@ const chat = {
 			const image = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"))?.[0];
 
 			// 画像貼り付け
-			if (image && editableRoot === inputUser || editableRoot.tagName === "ARTICLE" && sectionChat.contains(editableRoot) && editableRoot.dataset.role === "user") {
+			if (image && (editableRoot === inputUser || editableRoot.tagName === "ARTICLE" && sectionChat.contains(editableRoot) && editableRoot.dataset.role === "user")) {
 
 				// alert([...evt.clipboardData.items].map(item => `${item.kind}:${item.type}`).join("\n"));
 
@@ -223,7 +223,7 @@ const chat = {
 	async fetchMessage(articleModelMessage, inputTextModel = "", tryTimes = 0) {
 		sectionChat.querySelectorAll("article").forEach(a => { if (a !== articleModelMessage && a.innerText.trim() === "") a.remove(); });
 		articleModelMessage.dataset.loading = "true";
-		const res = await gemini.createMessage(this.getMessagesFromChatSection());
+		const res = await gemini.createMessage(this.getMessagesFromChatSection().slice(-200));
 		delete articleModelMessage.dataset.loading;
 		if (res.error) {
 			tryTimes++;
@@ -244,7 +244,7 @@ const chat = {
 	 * @return {K_GeneralAiChatMessage[]}
 	 */
 	getMessagesFromChatSection() {
-		const articles = [...sectionChat.querySelectorAll("article")];
+		const articles = [...sectionChat.querySelectorAll("article")].slice(-150);
 		return articles.flatMap(/** @return {K_GeneralAiChatMessage} */a => {
 			if (a.dataset.role === "user") return { user: a.innerText };
 			if (a.dataset.role === "user-image") return [...a.querySelectorAll("figure")].map(fig => {
