@@ -101,7 +101,6 @@ const chat = {
 
 		// 画像・ペースト
 		document.addEventListener("paste", async evt => {
-			evt.preventDefault();
 			const editableRoot = /** @type {HTMLElement} */(evt.target).closest('[contenteditable="true"], textarea');
 			if (!editableRoot) return;
 			const image = [...evt.clipboardData.items].filter(item => item.type.startsWith("image"))?.[0];
@@ -109,8 +108,7 @@ const chat = {
 			// 画像貼り付け
 			if (image && (editableRoot === inputUser || editableRoot.tagName === "ARTICLE" && sectionChat.contains(editableRoot) && editableRoot.dataset.role === "user")) {
 
-				// alert([...evt.clipboardData.items].map(item => `${item.kind}:${item.type}`).join("\n"));
-
+				evt.preventDefault();
 				// URL情報もあるならそれを参照する
 				const url = null && await (async () => {
 					const htmlItem = [...evt.clipboardData.items].filter(item => item.type === "text/html")?.[0];
@@ -124,7 +122,8 @@ const chat = {
 				else this.attachImage(editableRoot, { blob: image.getAsFile() });
 				if (sectionChat.contains(editableRoot)) chat.saveChatMessages();
 			}
-			else {
+			else if (IS_IPHONE) {
+				evt.preventDefault();
 				const text = evt.clipboardData.getData("text/plain");
 				if (text) document.execCommand("insertText", false, text);
 			}
