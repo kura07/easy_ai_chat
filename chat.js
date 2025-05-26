@@ -84,14 +84,15 @@ const chat = {
 		document.addEventListener("keydown", evt => {
 			const /** @type {HTMLElement} */ target = evt.target;
 			if (target === inputUser || target === inputModel) {
-				if (evt.key === "Enter" && evt.ctrlKey) {
+				if (evt.ctrlKey && evt.key === "Enter") {
 					evt.preventDefault();
 					this.addNewMessage();
 					this.arrangeInputForm();
 				}
 			}
 			if (isPastMessage(target)) {
-				if (evt.key === "Enter" && evt.ctrlKey) {
+				if (evt.ctrlKey && evt.key === "Enter") {
+					chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
 					evt.preventDefault();
 					this.regenerageMessage();
 				}
@@ -142,7 +143,7 @@ const chat = {
 		if (!IS_IPHONE) sectionChat.addEventListener("focusout", evt => {
 			const /** @type {HTMLElement} */ target = evt.target;
 			if (target.tagName === "ARTICLE" && target.dataset.changed === "true") {
-				delete target.dataset.changed;
+				// delete target.dataset.changed;
 				if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
 				chat.saveChatMessages();
 			}
@@ -150,7 +151,7 @@ const chat = {
 		else window.addEventListener("k-keyboardclose", () => {
 			const targets = [...sectionChat.querySelectorAll("article")].filter(a => a.dataset.changed === "true");
 			targets.forEach(target => {
-				delete target.dataset.changed;
+				// delete target.dataset.changed;
 				if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
 			});
 			if (targets.length > 0) chat.saveChatMessages();
@@ -295,6 +296,7 @@ const chat = {
 	 * @param {string} markdownText
 	 */
 	updateModelMessage(targetElement, markdownText) {
+		delete targetElement.dataset.changed;
 		targetElement.innerHTML = markdown.parse(markdownText);
 		targetElement.dataset.markdown = markdownText;
 	},
