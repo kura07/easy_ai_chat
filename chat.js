@@ -92,7 +92,7 @@ const chat = {
 			}
 			if (isPastMessage(target)) {
 				if (evt.ctrlKey && evt.key === "Enter") {
-					chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
+					if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
 					evt.preventDefault();
 					this.regenerageMessage();
 				}
