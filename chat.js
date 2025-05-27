@@ -143,7 +143,7 @@ const chat = {
 		if (!IS_IPHONE) sectionChat.addEventListener("focusout", evt => {
 			const /** @type {HTMLElement} */ target = evt.target;
 			if (target.tagName === "ARTICLE" && target.dataset.changed === "true") {
-				// delete target.dataset.changed;
+				delete target.dataset.changed;
 				if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
 				chat.saveChatMessages();
 			}
@@ -151,7 +151,7 @@ const chat = {
 		else window.addEventListener("k-keyboardclose", () => {
 			const targets = [...sectionChat.querySelectorAll("article")].filter(a => a.dataset.changed === "true");
 			targets.forEach(target => {
-				// delete target.dataset.changed;
+				delete target.dataset.changed;
 				if (target.dataset.role === "model") chat.updateModelMessage(target, markdown.turndown(target.innerHTML));
 			});
 			if (targets.length > 0) chat.saveChatMessages();
@@ -305,6 +305,7 @@ const chat = {
 	 * #chat の内容を localStorage に保存します。
 	 */
 	async saveChatMessages() {
+		console.log(new Error().stack);
 		const clone = templateIconUpdaing.content.cloneNode(true), figure = clone.querySelector("figure");
 		templateIconUpdaing.parentElement.append(clone);
 		const httpRes = await fetch(this.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId: this._sessionId, timestamp: Date.now(), newMessages: this.getMessagesFromChatSection(), newSessionName: this._sessionName }) });
