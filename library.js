@@ -224,7 +224,7 @@ const gemini = {
    * @param {{model:K_EnumGeminiModel, temperature:number}} obj
    * @returns {Promise<{responceCode?:number, success?:boolean, error?:boolean, originalResponse?:K_GeminiOriginalResponse, text?:string}>}
    */
-  async createMessage(messages, { model = "gemini-flash-latest", temperature = 1 } = {}) {
+  async createMessage(messages, { model = "gemini-3-flash-preview", temperature = 1 } = {}) {
 
     // messagesをgemini用に変換
     const rawContents = await gemini.forGemini(messages);
@@ -246,7 +246,8 @@ const gemini = {
       });
 
       const /** @type {K_GeminiOriginalResponse} */ json = await httpRes.json();
-      console.log(httpRes.status, json);
+      const price = +((json.usageMetadata.promptTokenCount * .5 + json.usageMetadata.candidatesTokenCount * 3.0) / 1e6).toFixed(4);
+      console.log(httpRes.status, price, json);
       if (!httpRes.ok) return { responceCode: httpRes.status, error: true, originalResponse: json };
 
       const text = json.candidates?.[0].content.parts?.[0].text || "";
