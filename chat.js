@@ -305,7 +305,7 @@ const chat = {
 	 * #chat の内容を localStorage に保存します。
 	 */
 	async saveChatMessages() {
-		console.log(new Error().stack);
+		// console.log(new Error().stack);
 		const clone = templateIconUpdaing.content.cloneNode(true), figure = clone.querySelector("figure");
 		templateIconUpdaing.parentElement.append(clone);
 		const httpRes = await fetch(this.storageUrl, { method: "post", body: JSON.stringify({ action: "update", sessionId: this._sessionId, timestamp: Date.now(), newMessages: this.getMessagesFromChatSection(), newSessionName: this._sessionName }) });
