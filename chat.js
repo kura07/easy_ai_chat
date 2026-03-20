@@ -223,7 +223,9 @@ const chat = {
 	async fetchMessage(articleModelMessage, inputTextModel = "", tryTimes = 0) {
 		sectionChat.querySelectorAll("article").forEach(a => { if (a !== articleModelMessage && a.innerText.trim() === "") a.remove(); });
 		articleModelMessage.dataset.loading = "true";
-		const res = await gemini.createMessage(this.getMessagesFromChatSection().slice(-150));
+		const messages = this.getMessagesFromChatSection();
+		while (messages.length > 150) messages.splice(0, 30);
+		const res = await gemini.createMessage(messages);
 		delete articleModelMessage.dataset.loading;
 		if (res.error) {
 			tryTimes++;
