@@ -240,7 +240,7 @@ const gemini = {
 
     // fetch
     try {
-      const body = JSON.stringify(({ contents, generationConfig: { temperature }, safetySettings: [{ category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "OFF" }], serviceTier: "flex" }));
+      const body = JSON.stringify(({ contents, generationConfig: { temperature }, safetySettings: [{ category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "OFF" }] }));
       const httpRes = await fetch(`https:/\/generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${gemini._apiKey}`, {
         method: "post", body,
       });
