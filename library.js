@@ -246,7 +246,7 @@ const gemini = {
       });
 
       const /** @type {K_GeminiOriginalResponse} */ json = await httpRes.json();
-      const price = +((json.usageMetadata.promptTokenCount * .5 + json.usageMetadata.candidatesTokenCount * 3.0) / 1e6).toFixed(4);
+      const price = +((json.usageMetadata?.promptTokenCount * .5 + json.usageMetadata?.candidatesTokenCount * 3.0) / 1e6).toFixed(4);
       console.log(httpRes.status, price, json);
       if (!httpRes.ok) return { responceCode: httpRes.status, error: true, originalResponse: json };
 
