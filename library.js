@@ -224,7 +224,7 @@ const gemini = {
    * @param {{model:K_EnumGeminiModel, temperature:number}} obj
    * @returns {Promise<{responceCode?:number, success?:boolean, error?:boolean, originalResponse?:K_GeminiOriginalResponse, text?:string}>}
    */
-  async createMessage(messages, { model = "gemini-3.5-flash", temperature = 1 } = {}) {
+  async createMessage(messages, { model = "gemini-3-flash-preview", temperature = 1 } = {}) {
 
     // messagesをgemini用に変換
     const rawContents = await gemini.forGemini(messages);
